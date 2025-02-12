@@ -1,3 +1,4 @@
+# python3 -m build
 from python:3.13-alpine
 
 WORKDIR /usr/src/study_planner

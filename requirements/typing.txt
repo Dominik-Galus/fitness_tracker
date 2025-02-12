@@ -2,3 +2,5 @@
 pydantic-settings
 types-requests
 sqlalchemy-stubs
+types-passlib
+types-python-jose

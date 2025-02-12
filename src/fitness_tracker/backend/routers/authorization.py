@@ -5,18 +5,18 @@ from typing import Annotated
 
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jose import jwt
+from fastapi.security import HTTPBearer, OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette import status
 
-from study_planner.backend.configs.access_token import PAYLOAD_ID, PAYLOAD_SUB, TIME_EXPIRES
-from study_planner.backend.database import SessionLocal
-from study_planner.backend.models.auth_token import AuthToken
-from study_planner.backend.models.create_user_request import CreateUserRequest
-from study_planner.backend.models.users import Users
+from fitness_tracker.backend.configs.access_token import PAYLOAD_ID, PAYLOAD_SUB, TIME_EXPIRES
+from fitness_tracker.backend.database import SessionLocal
+from fitness_tracker.backend.models.auth_token import AuthToken
+from fitness_tracker.backend.models.create_user_request import CreateUserRequest
+from fitness_tracker.backend.models.users import Users
 
 load_dotenv()
 
@@ -28,9 +28,12 @@ ALGORITHM: str | None = os.getenv("ALGORITHM")
 SUCCESS_USER_CREATE: dict[str, bool] = {"status": True}
 USERNAME_KEY: str = "users_username_key"
 EMAIL_KEY: str = "users_email_key"
+REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token")
+security = HTTPBearer()
 
 
 def get_database() -> Generator:
@@ -85,9 +88,11 @@ async def login_for_access_token(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate user",
         )
-    token = create_access_token(user.username, user.id, timedelta(minutes=20))
+    access_token = create_access_token(user.username, user.id)
 
-    return AuthToken(access_token=token, token_type="bearer")  # noqa: S106
+    refresh_token = create_refresh_token(user.username, user.id)
+
+    return AuthToken(access_token=access_token, refresh_token=refresh_token, token_type="bearer")  # noqa: S106
 
 
 def authenticate_user(username: str, password: str, database: database_dependency) -> Users | None:
@@ -99,11 +104,66 @@ def authenticate_user(username: str, password: str, database: database_dependenc
     return user
 
 
-def create_access_token(username: str, user_id: int, expires_delta: timedelta) -> str:
+def create_access_token(username: str, user_id: int) -> str:
     if not SECRET_KEY or not ALGORITHM:
-        msg = "There is no secret key or algorithm"
+        msg = "Missing SECRET_KEY or Algorithm"
         raise ValueError(msg)
-    encode = {PAYLOAD_SUB: username, PAYLOAD_ID: user_id}
-    expires = datetime.now(UTC) + expires_delta
-    encode.update({TIME_EXPIRES: expires})
+
+    expires = datetime.now(UTC) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    encode = {PAYLOAD_SUB: username, PAYLOAD_ID: user_id, TIME_EXPIRES: expires.timestamp()}
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def create_refresh_token(username: str, user_id: int) -> str:
+    if not SECRET_KEY or not ALGORITHM:
+        msg = "Missing SECRET_KEY or Algorithm"
+        raise ValueError(msg)
+
+    expires = datetime.now(UTC) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    encode = {PAYLOAD_SUB: username, PAYLOAD_ID: user_id, TIME_EXPIRES: expires.timestamp(), "type": "refresh"}
+
+    return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
+
+
+@authorization_router.post("/refresh")
+async def refresh_access_token(refresh_token: str, database: database_dependency) -> AuthToken:
+    if SECRET_KEY is None or ALGORITHM is None:
+        msg = "Missing SECRET_KEY or Algorithm"
+        raise ValueError(msg)
+    try:
+        payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=ALGORITHM)
+    except JWTError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired refresh token",
+        ) from e
+
+    if payload.get("type") != "refresh":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token type",
+        )
+
+    username: str | None = payload.get(PAYLOAD_SUB)
+    user_id: int | None = payload.get(PAYLOAD_ID)
+
+    if username is None or user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload",
+        )
+
+    user = database.query(Users).filter(Users.id == user_id).first()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found",
+        )
+
+    access_token = create_access_token(username, user_id)
+
+    return AuthToken(
+        access_token=access_token,
+        token_type="bearer",  # noqa: S106
+    )

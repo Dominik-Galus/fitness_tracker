@@ -8,3 +8,5 @@ bcrypt==4.0.1
 python-multipart
 passlib[bcrypt]
 pydantic[email]
+python-dotenv
+psycopg2-binary

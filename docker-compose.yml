@@ -5,6 +5,10 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://admin:admin@database:5432/study_planner_db
+      ALGORITHM: HS256
+      SECRET_KEY: 1234567890qwertyuiopasdfghjklzxcvbnm
     depends_on:
       - database
 

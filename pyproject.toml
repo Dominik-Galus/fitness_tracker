@@ -3,12 +3,12 @@ requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "study_planner"
+name = "fitness_tracker"
 authors = [
     {name = "Dominik Galus"},
 ]
 version = "0.1.0"
-description = "study planner"
+description = "fitness tracker"
 readme = "README.md"
 requires-python = ">=3.13"
 dynamic = ["dependencies"]

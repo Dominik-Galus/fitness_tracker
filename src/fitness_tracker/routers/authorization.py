@@ -25,7 +25,6 @@ authorization_router = APIRouter(prefix="/auth", tags=["authorization"])
 SECRET_KEY: str | None = os.getenv("SECRET_KEY")
 ALGORITHM: str | None = os.getenv("ALGORITHM")
 
-SUCCESS_USER_CREATE: dict[str, bool] = {"status": True}
 USERNAME_KEY: str = "users_username_key"
 EMAIL_KEY: str = "users_email_key"
 REFRESH_TOKEN_EXPIRE_DAYS: int = 7
@@ -48,7 +47,7 @@ database_dependency = Annotated[Session, Depends(get_database)]
 
 
 @authorization_router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_user(database: database_dependency, create_user_request: CreateUserRequest) -> dict[str, bool]:
+async def create_user(database: database_dependency, create_user_request: CreateUserRequest) -> None:
     try:
         create_user_model = Users(
             username=create_user_request.username,
@@ -73,8 +72,6 @@ async def create_user(database: database_dependency, create_user_request: Create
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An unexpected error occurred.",
         ) from e
-    else:
-        return SUCCESS_USER_CREATE
 
 
 @authorization_router.post("/token")

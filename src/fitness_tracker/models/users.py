@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String
 
-from fitness_tracker.backend.database import Base
+from fitness_tracker.database import Base
 
 
 class Users(Base):

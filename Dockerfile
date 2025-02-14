@@ -11,4 +11,4 @@ RUN pip install --no-cache-dir /usr/src/fitness_tracker/dist/*.whl
 
 EXPOSE 8000
 
-ENTRYPOINT ["uvicorn", "fitness_tracker.backend.main:planner_app", "--host", "0.0.0.0", "--reload"]
+ENTRYPOINT ["uvicorn", "fitness_tracker.main:fitness_app", "--host", "0.0.0.0", "--reload"]

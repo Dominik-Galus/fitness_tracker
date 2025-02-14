@@ -1,0 +1,92 @@
+<template>
+  <div>
+    <nav class="navbar">
+      <ul>
+        <li><router-link to="/">Home</router-link></li>
+        <li v-if="isAuthenticated"><router-link to="/profile">Profile</router-link></li>
+        <li v-if="isAuthenticated"><router-link to="/settings">Settings</router-link></li>
+
+        <li v-if="!isAuthenticated"><router-link to="/login">Login</router-link></li>
+        <li v-if="!isAuthenticated"><router-link to="/register">Register</router-link></li>
+
+        <li v-if="isAuthenticated"><a href="#" @click="logout">Logout</a></li>
+      </ul>
+    </nav>
+
+    <!-- Dynamic Page Content -->
+    <div class="content">
+      <router-view />
+    </div>
+  </div>
+</template>
+
+<script>
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import eventBus from "./eventBus"; // Import eventBus
+
+export default {
+  setup() {
+    const router = useRouter();
+    const isAuthenticated = ref(!!localStorage.getItem("access_token"));
+
+    onMounted(() => {
+      eventBus.on("auth-change", () => {
+        isAuthenticated.value = !!localStorage.getItem("access_token");
+      });
+    });
+
+    const logout = () => {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      eventBus.emit("auth-change");
+      router.push("/login");
+    };
+
+    return {
+      isAuthenticated,
+      logout,
+    };
+  },
+};
+</script>
+
+<style scoped>
+.navbar {
+  background-color: #2c3e50;
+  padding: 12px;
+  display: flex;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.navbar ul {
+  list-style: none;
+  display: flex;
+  padding: 0;
+  margin: 0;
+}
+
+.navbar li {
+  margin: 0 15px;
+}
+
+.navbar a {
+  text-decoration: none;
+  color: #ecf0f1;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 10px 15px;
+  border-radius: 5px;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.navbar a:hover {
+  background-color: #34495e;
+}
+
+.content {
+  padding: 20px;
+  text-align: center;
+}
+</style>

@@ -9,19 +9,41 @@ services:
       DATABASE_URL: postgresql://admin:admin@database:5432/study_planner_db
       ALGORITHM: HS256
       SECRET_KEY: 1234567890qwertyuiopasdfghjklzxcvbnm
+      FRONTEND_URL: http://localhost:8080
     depends_on:
       - database
+    networks:
+      - app_network
 
   database:
     image: postgres:latest
     environment:
-      POSTGRES_DB: study_planner_db
+      POSTGRES_DB: fitness_tracker_db
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
     volumes:
       - database_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    networks:
+      - app_network
+
+  frontend:
+    build:
+      context: ./fitness_frontend
+      dockerfile: Dockerfile
+    environment:
+      VITE_BACKEND_API_URL: http://backend:8000
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - app_network
 
 volumes:
   database_data:
+
+networks:
+  app_network:
+    driver: bridge

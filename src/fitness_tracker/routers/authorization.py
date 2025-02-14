@@ -12,11 +12,11 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette import status
 
-from fitness_tracker.backend.configs.access_token import PAYLOAD_ID, PAYLOAD_SUB, TIME_EXPIRES
-from fitness_tracker.backend.database import SessionLocal
-from fitness_tracker.backend.models.auth_token import AuthToken
-from fitness_tracker.backend.models.create_user_request import CreateUserRequest
-from fitness_tracker.backend.models.users import Users
+from fitness_tracker.configs.access_token import PAYLOAD_ID, PAYLOAD_SUB, TIME_EXPIRES
+from fitness_tracker.database import SessionLocal
+from fitness_tracker.models.auth_token import AuthToken
+from fitness_tracker.models.create_user_request import CreateUserRequest
+from fitness_tracker.models.users import Users
 
 load_dotenv()
 

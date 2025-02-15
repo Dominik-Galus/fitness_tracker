@@ -1,4 +1,5 @@
 from collections.abc import Generator
+from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -67,5 +68,73 @@ async def create_training(
         database.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Error occurred while creating training",
+            detail="Error occurred while creating training.",
         ) from e
+
+
+@trainings_router.get("/fetchall/{user_id}")
+async def get_all_trainings(user_id: int, database: database_dependency) -> list[Training] | None:
+    try:
+        results: list[Training] = []
+
+        trainings = database.query(TrainingsTable).filter(TrainingsTable.user_id == user_id).all()
+        if not trainings:
+            return None
+
+        for training in trainings:
+            training_model = Training(training_name=training.name, date=training.date)
+            results.append(training_model)
+    except IntegrityError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Error occured while fetchin all trainings.",
+        ) from e
+    else:
+        return results
+
+
+@trainings_router.get("/fetch/{training_id}")
+async def fetch_training_details(
+    training_id: int,
+    database: database_dependency,
+) -> dict[tuple[str, date], list[ExerciseSet] | None]:
+    try:
+        training_details: dict[tuple[str, date], list[ExerciseSet] | None] = {}
+        sets_details: list[ExerciseSet] = []
+
+        training = database.query(TrainingsTable).filter(TrainingsTable.id == training_id).first()
+        if not training:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"There is no training with id: {training_id}.",
+            )
+
+        exercise_sets = database.query(SetsTable).filter(SetsTable.training_id == training_id).all()
+        if not exercise_sets:
+            return {(training.name, training.date): None}
+
+        for exercise_set in exercise_sets:
+            exercise = database.query(ExerciseTable).filter(
+                ExerciseTable.id == exercise_set.exercise_id,
+            ).first()
+            if not exercise:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Error occurred while fetching exercise",
+                )
+
+            set_model = ExerciseSet(
+                exercise_name=exercise.exercise_name,
+                repetitions=exercise_set.repetitions,
+                weight=float(exercise_set.weight),
+            )
+            sets_details.append(set_model)
+        training_details[training.name, training.date] = sets_details
+    except IntegrityError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Error occured while fetchin all trainings.",
+        ) from e
+
+    else:
+        return training_details

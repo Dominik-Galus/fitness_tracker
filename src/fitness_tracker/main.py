@@ -10,11 +10,13 @@ from sqlalchemy.orm import Session
 from fitness_tracker import models
 from fitness_tracker.database import SessionLocal, engine
 from fitness_tracker.routers.authorization import authorization_router
+from fitness_tracker.routers.profiles import profiles_router
 
 load_dotenv()
 
 fitness_app = FastAPI()
 fitness_app.include_router(authorization_router)
+fitness_app.include_router(profiles_router)
 
 models.Base.metadata.create_all(bind=engine)
 

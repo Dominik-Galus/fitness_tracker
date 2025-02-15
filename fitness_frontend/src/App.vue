@@ -4,7 +4,6 @@
       <ul>
         <li><router-link to="/">Home</router-link></li>
         <li v-if="isAuthenticated"><router-link to="/profile">Profile</router-link></li>
-        <li v-if="isAuthenticated"><router-link to="/settings">Settings</router-link></li>
 
         <li v-if="!isAuthenticated"><router-link to="/login">Login</router-link></li>
         <li v-if="!isAuthenticated"><router-link to="/register">Register</router-link></li>
@@ -13,7 +12,6 @@
       </ul>
     </nav>
 
-    <!-- Dynamic Page Content -->
     <div class="content">
       <router-view />
     </div>
@@ -23,7 +21,8 @@
 <script>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import eventBus from "./eventBus"; // Import eventBus
+import eventBus from "./eventBus";
+import "./assets/global.css"
 
 export default {
   setup() {
@@ -89,4 +88,5 @@ export default {
   padding: 20px;
   text-align: center;
 }
+
 </style>

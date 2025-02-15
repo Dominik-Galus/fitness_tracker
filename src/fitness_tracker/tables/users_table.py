@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, String
 from fitness_tracker.database import Base
 
 
-class Users(Base):
+class UsersTable(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)

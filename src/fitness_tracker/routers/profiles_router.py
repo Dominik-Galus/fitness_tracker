@@ -9,7 +9,7 @@ from starlette import status
 
 from fitness_tracker.database import SessionLocal
 from fitness_tracker.models.profiles import Profiles
-from fitness_tracker.models.user_profile import UserProfile
+from fitness_tracker.tables.profile_table import ProfileTable
 
 profiles_router = APIRouter(prefix="/profile", tags=["user_profile"])
 USER_ID_KEY: str = "user_profile_user_id_key"
@@ -29,9 +29,9 @@ database_dependency = Annotated[Session, Depends(get_database)]
 @profiles_router.get("/{user_id}", status_code=status.HTTP_200_OK)
 async def get_profile(user_id: int, database: database_dependency) -> Profiles | None:
     try:
-        profile = database.query(UserProfile).filter(UserProfile.user_id == user_id).first()
+        profile = database.query(ProfileTable).filter(ProfileTable.user_id == user_id).first()
         if not profile:
-            profile = UserProfile(
+            profile = ProfileTable(
                 user_id=user_id,
                 age=0,
                 weight=0.0,
@@ -41,6 +41,7 @@ async def get_profile(user_id: int, database: database_dependency) -> Profiles |
             database.commit()
             database.refresh(profile)
     except IntegrityError as e:
+        database.rollback()
         if USER_ID_KEY in str(e):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -62,16 +63,17 @@ async def get_profile(user_id: int, database: database_dependency) -> Profiles |
 @profiles_router.put("/update/{user_id}", status_code=status.HTTP_200_OK)
 async def update_profile(user_id: int, updated_profile: Profiles, database: database_dependency) -> None:
     try:
-        update_profile = update(UserProfile).where(UserProfile.user_id == user_id).values(  # type: ignore[arg-type]
+        update_profile = update(ProfileTable).where(ProfileTable.user_id == user_id).values(  # type: ignore[arg-type]
             {
-                UserProfile.age: updated_profile.age,
-                UserProfile.weight: updated_profile.weight,
-                UserProfile.height: updated_profile.height,
+                ProfileTable.age: updated_profile.age,
+                ProfileTable.weight: updated_profile.weight,
+                ProfileTable.height: updated_profile.height,
             },
         )
         database.execute(update_profile)
         database.commit()
     except IntegrityError as e:
+        database.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Error occurred while updating profile",

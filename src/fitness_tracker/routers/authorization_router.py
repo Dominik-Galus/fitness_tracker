@@ -16,7 +16,7 @@ from fitness_tracker.configs.access_token import PAYLOAD_ID, PAYLOAD_SUB, TIME_E
 from fitness_tracker.database import SessionLocal
 from fitness_tracker.models.auth_token import AuthToken
 from fitness_tracker.models.create_user_request import CreateUserRequest
-from fitness_tracker.models.users import Users
+from fitness_tracker.tables.users_table import UsersTable
 
 load_dotenv()
 
@@ -49,7 +49,7 @@ database_dependency = Annotated[Session, Depends(get_database)]
 @authorization_router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_user(database: database_dependency, create_user_request: CreateUserRequest) -> None:
     try:
-        create_user_model = Users(
+        create_user_model = UsersTable(
             username=create_user_request.username,
             email=create_user_request.email,
             password=bcrypt_context.hash(create_user_request.password),
@@ -92,8 +92,8 @@ async def login_for_access_token(
     return AuthToken(access_token=access_token, refresh_token=refresh_token, token_type="bearer")  # noqa: S106
 
 
-def authenticate_user(username: str, password: str, database: database_dependency) -> Users | None:
-    user = database.query(Users).filter(Users.username == username).first()
+def authenticate_user(username: str, password: str, database: database_dependency) -> UsersTable | None:
+    user = database.query(UsersTable).filter(UsersTable.username == username).first()
     if not user:
         return None
     if not bcrypt_context.verify(password, user.password):
@@ -150,7 +150,7 @@ async def refresh_access_token(refresh_token: str, database: database_dependency
             detail="Invalid token payload",
         )
 
-    user = database.query(Users).filter(Users.id == user_id).first()
+    user = database.query(UsersTable).filter(UsersTable.id == user_id).first()
 
     if not user:
         raise HTTPException(

@@ -8,6 +8,7 @@
 <script>
 import { jwtDecode } from "jwt-decode";
 import axios from '@/axios';
+import { useRouter } from "vue-router";
 
 export default {
   data() {
@@ -20,16 +21,17 @@ export default {
   },
   methods: {
     checkAuthentication() {
+      const router = useRouter();
       const token = localStorage.getItem('access_token');
       if (!token) {
-        this.$router.push('/login');
+        router.push('/login');
       } else {
         try {
           const decoded = jwtDecode(token);
           this.username = decoded.sub;
         } catch (error) {
           console.error("Invalid token", error);
-          this.$router.push('/login');
+          router.push('/login');
         }
       }
     },

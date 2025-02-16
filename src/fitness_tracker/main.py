@@ -7,18 +7,20 @@ from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from fitness_tracker import models
+from fitness_tracker import tables
 from fitness_tracker.database import SessionLocal, engine
-from fitness_tracker.routers.authorization import authorization_router
-from fitness_tracker.routers.profiles import profiles_router
+from fitness_tracker.routers.authorization_router import authorization_router
+from fitness_tracker.routers.profiles_router import profiles_router
+from fitness_tracker.routers.trainings_router import trainings_router
 
 load_dotenv()
 
 fitness_app = FastAPI()
 fitness_app.include_router(authorization_router)
 fitness_app.include_router(profiles_router)
+fitness_app.include_router(trainings_router)
 
-models.Base.metadata.create_all(bind=engine)
+tables.Base.metadata.create_all(bind=engine)
 
 frontend_url: str | None = os.getenv("FRONTEND_URL")
 if frontend_url is None:

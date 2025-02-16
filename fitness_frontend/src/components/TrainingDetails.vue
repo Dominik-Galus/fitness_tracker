@@ -22,6 +22,7 @@
 <script>
 import axios from '@/axios';
 import { jwtDecode } from "jwt-decode";
+import { useRouter } from "vue-router";
 
 export default {
   props: ['id'],
@@ -38,9 +39,10 @@ export default {
   methods: {
     async fetchTrainingDetails() {
       try {
+        const router = useRouter();
         const token = localStorage.getItem("access_token");
         if (!token) {
-          this.$router.push("/login");
+          router.push("/login");
           return;
         }
 

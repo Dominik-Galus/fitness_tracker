@@ -22,6 +22,7 @@
 
 <script>
 import axios from '../axios';
+import { useRouter } from "vue-router";
 
 export default {
   data() {
@@ -35,6 +36,7 @@ export default {
   methods: {
     async register() {
       try {
+        const router = useRouter();
         const apiUrl = import.meta.env.VITE_BACKEND_API_URL;
         await axios.post(
           `${apiUrl}/auth/`, {
@@ -42,7 +44,7 @@ export default {
           email: this.email,
           password: this.password
         });
-        this.$router.push('/login');
+        router.push('/login');
       } catch (err) {
         this.error = 'Registration failed. Please try again.';
       }

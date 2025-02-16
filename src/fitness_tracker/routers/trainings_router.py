@@ -10,6 +10,7 @@ from starlette import status
 from fitness_tracker.database import SessionLocal
 from fitness_tracker.models.exercise_set import ExerciseSet
 from fitness_tracker.models.training import Training
+from fitness_tracker.models.training_request import TrainingRequest
 from fitness_tracker.tables.exercise_table import ExerciseTable
 from fitness_tracker.tables.sets_table import SetsTable
 from fitness_tracker.tables.trainings_table import TrainingsTable
@@ -31,7 +32,7 @@ database_dependency = Annotated[Session, Depends(get_database)]
 @trainings_router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_training(
     user_id: int,
-    training: Training,
+    training: TrainingRequest,
     sets: list[ExerciseSet],
     database: database_dependency,
 ) -> None:

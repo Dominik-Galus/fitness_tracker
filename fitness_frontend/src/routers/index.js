@@ -5,6 +5,7 @@ import Register from "../components/Register.vue";
 import Profile from "../components/Profile.vue";
 import Trainings from "../components/Trainings.vue";
 import TrainingDetails from "../components/TrainingDetails.vue";
+import CreateTraining from "../components/CreateTraining.vue";
 
 const routes = [
     {
@@ -32,6 +33,10 @@ const routes = [
         path: "/trainings/:id",
         component: TrainingDetails,
         props: true,
+    },
+    {
+        path: "/trainings/create",
+        component: CreateTraining,
     },
 ];
 

@@ -3,6 +3,7 @@ from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette import status
@@ -144,3 +145,20 @@ async def fetch_training_details(
 
     else:
         return training_details
+
+
+@trainings_router.delete("/delete/{training_id}")
+async def delete_training(training_id: int, database: database_dependency) -> None:
+    try:
+        sets_statement = delete(SetsTable).where(SetsTable.training_id == training_id)  # type: ignore[arg-type]
+        training_statement = delete(TrainingsTable).where(TrainingsTable.id == training_id)  # type: ignore[arg-type]
+
+        database.execute(sets_statement)
+        database.execute(training_statement)
+        database.commit()
+    except IntegrityError as e:
+        database.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Error occured while fetchin all trainings.",
+        ) from e

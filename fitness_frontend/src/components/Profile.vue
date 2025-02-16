@@ -1,25 +1,27 @@
 <template>
   <div class="profile-container">
-    <h2>Profile</h2>
-    <div v-if="loading">Loading profile...</div>
+    <h2 class="page-title">Profile</h2>
+    <div v-if="loading" class="loading-message">Loading profile...</div>
     <div v-else>
       <form @submit.prevent="updateProfile" class="profile-form">
         <div class="form-group">
           <label for="age">Age:</label>
-          <input type="number" v-model="profile.age" id="age" required />
+          <input type="number" v-model="profile.age" id="age" required class="form-input" />
         </div>
         <div class="form-group">
           <label for="height">Height (cm):</label>
-          <input type="number" v-model="profile.height" id="height" required />
+          <input type="number" v-model="profile.height" id="height" required class="form-input" />
         </div>
         <div class="form-group">
           <label for="weight">Weight (kg):</label>
-          <input type="number" v-model="profile.weight" id="weight" required />
+          <input type="number" v-model="profile.weight" id="weight" required class="form-input" />
         </div>
-        <button type="submit" class="submit-btn">Update Profile</button>
+        <button type="submit" class="submit-btn">
+          <span class="btn-icon">💾</span> Update Profile
+        </button>
       </form>
-      <p v-if="error" class="error">{{ error }}</p>
-      <p v-if="success" class="success">{{ success }}</p>
+      <p v-if="error" class="error-message">{{ error }}</p>
+      <p v-if="success" class="success-message">{{ success }}</p>
     </div>
   </div>
 </template>
@@ -27,7 +29,6 @@
 <script>
 import axios from '@/axios';
 import { jwtDecode } from "jwt-decode";
-import { useRouter } from "vue-router";
 
 export default {
   data() {
@@ -49,10 +50,9 @@ export default {
   methods: {
     async fetchProfile() {
       try {
-        const router = useRouter();
         const token = localStorage.getItem("access_token");
         if (!token) {
-          router.push("/login");
+          this.$router.push("/login");
           return;
         }
 
@@ -71,10 +71,9 @@ export default {
     },
     async updateProfile() {
       try {
-        const router = useRouter();
         const token = localStorage.getItem("access_token");
         if (!token) {
-          router.push("/login");
+          this.$router.push("/login");
           return;
         }
 
@@ -97,64 +96,62 @@ export default {
 
 <style scoped>
 .profile-container {
-  max-width: 400px;
+  max-width: 500px;
   margin: 50px auto;
-  padding: 20px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.loading-message {
+  font-size: 18px;
+  color: #666;
+  text-align: center;
 }
 
 .profile-form {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .form-group {
-  display: contents;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 label {
-  font-weight: 600;
-  text-align: right;
-  padding-right: 10px;
-}
-
-input {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
   font-size: 16px;
-  width: 100%;
+  font-weight: 500;
+  color: #2c3e50;
 }
 
-.submit-btn {
-  grid-column: span 2;
-  padding: 10px;
-  background-color: #2c3e50;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+.submit-btn .btn-icon {
+  margin-right: 8px;
+  font-size: 18px;
+}
+
+.error-message {
   font-size: 16px;
-  transition: background-color 0.3s ease;
-}
-
-.submit-btn:hover {
-  background-color: #34495e;
-}
-
-.error {
-  color: red;
-  margin-top: 10px;
+  color: #e74c3c;
   text-align: center;
+  margin-top: 20px;
 }
 
-.success {
-  color: green;
-  margin-top: 10px;
+.success-message {
+  font-size: 16px;
+  color: #27ae60;
   text-align: center;
+  margin-top: 20px;
 }
 </style>

@@ -1,20 +1,26 @@
 <template>
   <div class="training-details-container">
-    <h2>Training Details</h2>
-    <div v-if="loading">Loading training details...</div>
+    <h2 class="page-title">Training Details</h2>
+    <div v-if="loading" class="loading-message">Loading training details...</div>
     <div v-else>
-      <div v-if="trainingDetails">
-        <h3>{{ trainingDetails.name }} - {{ trainingDetails.date }}</h3>
+      <div v-if="trainingDetails" class="training-content">
+        <h3 class="training-title">{{ trainingDetails.name }} - {{ formatDate(trainingDetails.date) }}</h3>
         <ul class="sets-list">
           <li v-for="set in trainingDetails.sets" :key="set.exercise_name" class="set-item">
-            <p><strong>Exercise:</strong> {{ set.exercise_name }}</p>
-            <p><strong>Repetitions:</strong> {{ set.repetitions }}</p>
-            <p><strong>Weight:</strong> {{ set.weight }} kg</p>
+            <div class="set-content">
+              <p class="exercise-name"><strong>Exercise:</strong> {{ set.exercise_name }}</p>
+              <p class="exercise-detail"><strong>Repetitions:</strong> {{ set.repetitions }}</p>
+              <p class="exercise-detail"><strong>Weight:</strong> {{ set.weight }} kg</p>
+            </div>
           </li>
         </ul>
       </div>
       <p v-else class="no-details">No details available for this training.</p>
-      <p v-if="error" class="error">{{ error }}</p>
+      <p v-if="error" class="error-message">{{ error }}</p>
+
+      <button @click="goBack" class="go-back-btn">
+        <span class="btn-icon">←</span> Go Back
+      </button>
     </div>
   </div>
 </template>
@@ -22,7 +28,6 @@
 <script>
 import axios from '@/axios';
 import { jwtDecode } from "jwt-decode";
-import { useRouter } from "vue-router";
 
 export default {
   props: ['id'],
@@ -39,10 +44,9 @@ export default {
   methods: {
     async fetchTrainingDetails() {
       try {
-        const router = useRouter();
         const token = localStorage.getItem("access_token");
         if (!token) {
-          router.push("/login");
+          this.$router.push("/login");
           return;
         }
 
@@ -56,18 +60,55 @@ export default {
         this.loading = false;
       }
     },
+    formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    },
+    goBack() {
+      this.$router.push("/trainings");
+    },
   },
 };
 </script>
 
 <style scoped>
 .training-details-container {
-  max-width: 600px;
+  max-width: 800px;
   margin: 50px auto;
-  padding: 20px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.loading-message {
+  font-size: 18px;
+  color: #666;
+  text-align: center;
+}
+
+.training-content {
+  margin-top: 20px;
+}
+
+.training-title {
+  font-size: 24px;
+  font-weight: 500;
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 20px;
 }
 
 .sets-list {
@@ -76,20 +117,72 @@ export default {
 }
 
 .set-item {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.set-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.set-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.exercise-name {
+  font-size: 18px;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.exercise-detail {
+  font-size: 14px;
+  color: #555;
 }
 
 .no-details {
   text-align: center;
   color: #888;
+  font-size: 16px;
 }
 
-.error {
-  color: red;
-  margin-top: 10px;
+.error-message {
+  font-size: 16px;
+  color: #e74c3c;
   text-align: center;
+  margin-top: 20px;
+}
+
+.go-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  margin-top: 20px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  width: 100%;
+}
+
+.go-back-btn:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+}
+
+.go-back-btn .btn-icon {
+  margin-right: 8px;
+  font-size: 18px;
 }
 </style>

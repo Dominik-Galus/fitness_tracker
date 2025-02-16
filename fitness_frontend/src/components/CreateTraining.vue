@@ -1,6 +1,6 @@
 <template>
   <div class="create-training-container">
-    <h2>Create New Training</h2>
+    <h2 class="page-title">Create New Training</h2>
     <form @submit.prevent="submitTraining" class="create-training-form">
       <div class="form-group">
         <label for="training_name">Training Name:</label>
@@ -9,6 +9,8 @@
           id="training_name"
           v-model="training.training_name"
           required
+          class="form-input"
+          placeholder="Enter training name"
         />
       </div>
 
@@ -19,56 +21,79 @@
           id="date"
           v-model="training.date"
           required
+          class="form-input"
         />
       </div>
 
-      <div v-for="(set, index) in training.sets" :key="index" class="set-group">
-        <div class="form-group">
-          <label :for="`exercise_name_${index}`">Exercise Name:</label>
-          <input
-            type="text"
-            :id="`exercise_name_${index}`"
-            v-model="set.exercise_name"
-            required
-          />
+      <div v-for="(exercise, exerciseIndex) in exercises" :key="exerciseIndex" class="exercise-group">
+        <div class="exercise-header">
+          <h3>Exercise: {{ exercise.exercise_name }}</h3>
+          <button
+            type="button"
+            @click="removeExercise(exerciseIndex)"
+            class="remove-exercise-btn"
+          >
+            <span class="btn-icon">🗑️</span> Remove Exercise
+          </button>
         </div>
 
-        <div class="form-group">
-          <label :for="`repetitions_${index}`">Repetitions:</label>
-          <input
-            type="number"
-            :id="`repetitions_${index}`"
-            v-model="set.repetitions"
-            required
-          />
-        </div>
+        <div v-for="(set, setIndex) in exercise.sets" :key="setIndex" class="set-group">
+          <div class="form-group">
+            <label :for="`repetitions_${exerciseIndex}_${setIndex}`">Repetitions:</label>
+            <input
+              type="number"
+              :id="`repetitions_${exerciseIndex}_${setIndex}`"
+              v-model="set.repetitions"
+              required
+              class="form-input"
+              placeholder="Enter repetitions"
+            />
+          </div>
 
-        <div class="form-group">
-          <label :for="`weight_${index}`">Weight (kg):</label>
-          <input
-            type="number"
-            :id="`weight_${index}`"
-            v-model="set.weight"
-            required
-          />
+          <div class="form-group">
+            <label :for="`weight_${exerciseIndex}_${setIndex}`">Weight (kg):</label>
+            <input
+              type="number"
+              :id="`weight_${exerciseIndex}_${setIndex}`"
+              v-model="set.weight"
+              required
+              class="form-input"
+              placeholder="Enter weight"
+            />
+          </div>
+
+          <button
+            type="button"
+            @click="removeSet(exerciseIndex, setIndex)"
+            class="remove-set-btn"
+          >
+            <span class="btn-icon">🗑️</span> Remove Set
+          </button>
         </div>
 
         <button
           type="button"
-          @click="removeSet(index)"
-          class="remove-set-btn"
+          @click="addSet(exerciseIndex)"
+          class="add-set-btn"
         >
-          Remove Set
+          <span class="btn-icon">➕</span> Add Set
         </button>
       </div>
 
-      <button type="button" @click="addSet" class="add-set-btn">
-        Add Set
+      <button type="button" @click="addExercise" class="add-exercise-btn">
+        <span class="btn-icon">🏋️</span> Add Exercise
       </button>
 
-      <button type="submit" class="submit-btn">Create Training</button>
+      <div class="action-buttons">
+        <button type="submit" class="submit-btn">
+          <span class="btn-icon">💾</span> Create Training
+        </button>
+        <button type="button" @click="goBack" class="go-back-btn">
+          <span class="btn-icon">←</span> Go Back
+        </button>
+      </div>
     </form>
-    <p v-if="error" class="error">{{ error }}</p>
+    <p v-if="error" class="error-message">{{ error }}</p>
   </div>
 </template>
 
@@ -80,7 +105,6 @@ import { useRouter } from "vue-router";
 
 export default {
   setup() {
-
     const router = useRouter();
     const token = localStorage.getItem("access_token");
     if (!token) {
@@ -94,42 +118,72 @@ export default {
     const training = ref({
       training_name: '',
       date: '',
-      sets: [{ exercise_name: '', repetitions: 0, weight: 0 }],
     });
 
+    const exercises = ref([]);
     const error = ref('');
 
-    const addSet = () => {
-      training.value.sets.push({ exercise_name: '', repetitions: 0, weight: 0 });
+    const addExercise = () => {
+      const exerciseName = prompt("Enter the exercise name:");
+      if (exerciseName) {
+        exercises.value.push({
+          exercise_name: exerciseName,
+          sets: [{ repetitions: 0, weight: 0 }],
+        });
+      }
     };
 
-    const removeSet = (index) => {
-      training.value.sets.splice(index, 1);
+    const removeExercise = (exerciseIndex) => {
+      exercises.value.splice(exerciseIndex, 1);
+    };
+
+    const addSet = (exerciseIndex) => {
+      exercises.value[exerciseIndex].sets.push({ repetitions: 0, weight: 0 });
+    };
+
+    const removeSet = (exerciseIndex, setIndex) => {
+      exercises.value[exerciseIndex].sets.splice(setIndex, 1);
     };
 
     const submitTraining = async () => {
       try {
+        const sets = exercises.value.flatMap((exercise) =>
+          exercise.sets.map((set) => ({
+            exercise_name: exercise.exercise_name,
+            repetitions: set.repetitions,
+            weight: set.weight,
+          }))
+        );
+
         const apiUrl = import.meta.env.VITE_BACKEND_API_URL;
         await axios.post(`${apiUrl}/trainings/?user_id=${user_id}`, {
           training: {
             training_name: training.value.training_name,
             date: training.value.date,
           },
-          sets: training.value.sets,
+          sets: sets,
         });
         alert('Training created successfully!');
         router.push("/trainings");
       } catch (err) {
-          alert('An error occurred while creating the training.');
+        alert('An error occurred while creating the training.');
       }
+    };
+
+    const goBack = () => {
+      router.push("/trainings");
     };
 
     return {
       training,
+      exercises,
       error,
+      addExercise,
+      removeExercise,
       addSet,
       removeSet,
       submitTraining,
+      goBack,
     };
   },
 };
@@ -137,102 +191,219 @@ export default {
 
 <style scoped>
 .create-training-container {
-  max-width: 600px;
+  max-width: 800px;
   margin: 50px auto;
-  padding: 20px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  text-align: center;
 }
 
 .create-training-form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 8px;
 }
 
 label {
+  font-size: 16px;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.form-input {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  color: #333;
+  background-color: #f9f9f9;
+  transition: border-color 0.3s ease;
+}
+
+.form-input:focus {
+  border-color: #3498db;
+  outline: none;
+}
+
+.exercise-group {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 15px;
+  background: #f9f9f9;
+}
+
+.exercise-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.exercise-header h3 {
+  font-size: 18px;
   font-weight: 600;
   color: #2c3e50;
 }
 
-input {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-  width: 100%;
-  transition: border-color 0.3s ease;
-}
-
-input:focus {
-  border-color: #2c3e50;
-  outline: none;
-}
-
-.set-group {
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 15px;
-  margin-bottom: 10px;
-  background: #f9f9f9;
-}
-
-.remove-set-btn {
+.remove-exercise-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 8px 12px;
   background-color: #e74c3c;
   color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
-  transition: background-color 0.3s ease;
-  align-self: flex-start;
+  font-weight: 500;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.remove-exercise-btn:hover {
+  background-color: #c0392b;
+  transform: translateY(-2px);
+}
+
+.set-group {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 10px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.remove-set-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  background-color: #e74c3c;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .remove-set-btn:hover {
   background-color: #c0392b;
+  transform: translateY(-2px);
 }
 
 .add-set-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 10px;
   background-color: #3498db;
   color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s ease;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .add-set-btn:hover {
   background-color: #2980b9;
+  transform: translateY(-2px);
+}
+
+.add-exercise-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background-color: #27ae60;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.add-exercise-btn:hover {
+  background-color: #219653;
+  transform: translateY(-2px);
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
 }
 
 .submit-btn {
-  padding: 10px;
-  background-color: #2c3e50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background-color: #27ae60;
   color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 16px;
-  transition: background-color 0.3s ease;
+  font-weight: 500;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  flex-grow: 1;
 }
 
 .submit-btn:hover {
-  background-color: #34495e;
+  background-color: #219653;
+  transform: translateY(-2px);
 }
 
-.error {
+.go-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background-color: #2c3e50;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  flex-grow: 1;
+}
+
+.go-back-btn:hover {
+  background-color: #34495e;
+  transform: translateY(-2px);
+}
+
+.error-message {
+  font-size: 16px;
   color: #e74c3c;
-  margin-top: 10px;
   text-align: center;
+  margin-top: 20px;
 }
 </style>

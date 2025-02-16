@@ -3,6 +3,8 @@ import Login from "../components/Login.vue";
 import Dashboard from "../components/Dashboard.vue";
 import Register from "../components/Register.vue";
 import Profile from "../components/Profile.vue";
+import Trainings from "../components/Trainings.vue";
+import TrainingDetails from "../components/TrainingDetails.vue";
 
 const routes = [
     {
@@ -21,6 +23,15 @@ const routes = [
     {
         path: "/profile",
         component: Profile,
+    },
+    {
+        path: "/trainings",
+        component: Trainings,
+    },
+    {
+        path: "/trainings/:id",
+        component: TrainingDetails,
+        props: true,
     },
 ];
 

@@ -82,7 +82,7 @@ async def get_all_trainings(user_id: int, database: database_dependency) -> list
             return None
 
         for training in trainings:
-            training_model = Training(training_name=training.name, date=training.date)
+            training_model = Training(training_name=training.name, date=training.date, training_id=training.id)
             results.append(training_model)
     except IntegrityError as e:
         raise HTTPException(
@@ -97,9 +97,9 @@ async def get_all_trainings(user_id: int, database: database_dependency) -> list
 async def fetch_training_details(
     training_id: int,
     database: database_dependency,
-) -> dict[tuple[str, date], list[ExerciseSet] | None]:
+) -> dict[str, list[ExerciseSet] | str | date | None]:
     try:
-        training_details: dict[tuple[str, date], list[ExerciseSet] | None] = {}
+        training_details: dict[str, list[ExerciseSet] | str | date | None] = {}
         sets_details: list[ExerciseSet] = []
 
         training = database.query(TrainingsTable).filter(TrainingsTable.id == training_id).first()
@@ -111,7 +111,10 @@ async def fetch_training_details(
 
         exercise_sets = database.query(SetsTable).filter(SetsTable.training_id == training_id).all()
         if not exercise_sets:
-            return {(training.name, training.date): None}
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Error occurred while getting training details.",
+            )
 
         for exercise_set in exercise_sets:
             exercise = database.query(ExerciseTable).filter(
@@ -129,7 +132,9 @@ async def fetch_training_details(
                 weight=float(exercise_set.weight),
             )
             sets_details.append(set_model)
-        training_details[training.name, training.date] = sets_details
+        training_details["sets"] = sets_details
+        training_details["name"] = training.name
+        training_details["date"] = training.date
     except IntegrityError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

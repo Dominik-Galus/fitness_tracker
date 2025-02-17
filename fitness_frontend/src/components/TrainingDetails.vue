@@ -20,9 +20,15 @@
       <p v-else class="no-details">No details available for this training.</p>
       <p v-if="error" class="error-message">{{ error }}</p>
 
-      <button @click="goBack" class="go-back-btn">
-        <span class="btn-icon">←</span> Go Back
-      </button>
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button @click="goBack" class="go-back-btn">
+          <span class="btn-icon">←</span> Go Back
+        </button>
+        <button @click="goToUpdateTraining" class="update-training-btn">
+          <span class="btn-icon">✏️</span> Update Training
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -87,6 +93,9 @@ export default {
     },
     goBack() {
       this.$router.push("/trainings");
+    },
+    goToUpdateTraining() {
+      this.$router.push(`/trainings/update/${this.id}`);
     },
   },
 };
@@ -181,6 +190,13 @@ export default {
   margin-top: 20px;
 }
 
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 20px;
+}
+
 .go-back-btn {
   display: flex;
   align-items: center;
@@ -193,9 +209,8 @@ export default {
   cursor: pointer;
   font-size: 16px;
   font-weight: 500;
-  margin-top: 20px;
   transition: background-color 0.3s ease, transform 0.2s ease;
-  width: 100%;
+  flex-grow: 1;
 }
 
 .go-back-btn:hover {
@@ -204,6 +219,32 @@ export default {
 }
 
 .go-back-btn .btn-icon {
+  margin-right: 8px;
+  font-size: 18px;
+}
+
+.update-training-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  background-color: #27ae60;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  flex-grow: 1;
+}
+
+.update-training-btn:hover {
+  background-color: #219653;
+  transform: translateY(-2px);
+}
+
+.update-training-btn .btn-icon {
   margin-right: 8px;
   font-size: 18px;
 }

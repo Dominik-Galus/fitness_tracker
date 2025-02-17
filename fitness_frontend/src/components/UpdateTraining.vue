@@ -1,117 +1,120 @@
 <template>
-  <div class="create-training-container">
-    <h2 class="page-title">Create New Training</h2>
-    <form @submit.prevent="submitTraining" class="create-training-form">
-      <div class="form-group">
-        <label for="training_name">Training Name:</label>
-        <input
-          type="text"
-          id="training_name"
-          v-model="training.training_name"
-          required
-          class="form-input"
-          placeholder="Enter training name"
-        />
-      </div>
+  <div class="update-training-container">
+    <h2 class="page-title">Update Training</h2>
+    <div v-if="loading" class="loading-message">Loading training details...</div>
+    <div v-else>
+      <form @submit.prevent="submitTraining" class="update-training-form">
+        <div class="form-group">
+          <label for="training_name">Training Name:</label>
+          <input
+            type="text"
+            id="training_name"
+            v-model="training.training_name"
+            required
+            class="form-input"
+            placeholder="Enter training name"
+          />
+        </div>
 
-      <div class="form-group">
-        <label for="date">Date:</label>
-        <input
-          type="date"
-          id="date"
-          v-model="training.date"
-          required
-          class="form-input"
-        />
-      </div>
+        <div class="form-group">
+          <label for="date">Date:</label>
+          <input
+            type="date"
+            id="date"
+            v-model="training.date"
+            required
+            class="form-input"
+          />
+        </div>
 
-      <div class="form-group">
-        <label for="exercise_search">Search Exercise:</label>
-        <input
-          type="text"
-          id="exercise_search"
-          v-model="exerciseSearch"
-          @input="filterExercises"
-          class="form-input"
-          placeholder="Search for an exercise"
-        />
-        <div v-if="filteredExercises.length > 0" class="exercise-hints">
-          <div
-            v-for="(exercise, index) in filteredExercises"
-            :key="index"
-            class="exercise-hint"
-            @click="addExercise(exercise.exercise_name)"
-          >
-            {{ exercise.exercise_name }}
+        <div class="form-group">
+          <label for="exercise_search">Search Exercise:</label>
+          <input
+            type="text"
+            id="exercise_search"
+            v-model="exerciseSearch"
+            @input="filterExercises"
+            class="form-input"
+            placeholder="Search for an exercise"
+          />
+          <div v-if="filteredExercises.length > 0" class="exercise-hints">
+            <div
+              v-for="(exercise, index) in filteredExercises"
+              :key="index"
+              class="exercise-hint"
+              @click="addExercise(exercise.exercise_name)"
+            >
+              {{ exercise.exercise_name }}
+            </div>
           </div>
         </div>
-      </div>
 
-      <div v-for="(exercise, exerciseIndex) in exercises" :key="exerciseIndex" class="exercise-group">
-        <div class="exercise-header">
-          <h3>Exercise: {{ exercise.exercise_name }}</h3>
+        <div v-for="(exercise, exerciseIndex) in exercises" :key="exerciseIndex" class="exercise-group">
+          <div class="exercise-header">
+            <h3>Exercise: {{ exercise.exercise_name }}</h3>
+            <button
+              type="button"
+              @click="removeExercise(exerciseIndex)"
+              class="remove-exercise-btn"
+            >
+              <span class="btn-icon">🗑️</span> Remove Exercise
+            </button>
+          </div>
+
+          <div v-for="(set, setIndex) in exercise.sets" :key="setIndex" class="set-group">
+            <div class="form-group">
+              <label :for="`repetitions_${exerciseIndex}_${setIndex}`">Repetitions:</label>
+              <input
+                type="number"
+                :id="`repetitions_${exerciseIndex}_${setIndex}`"
+                v-model="set.repetitions"
+                required
+                class="form-input"
+                placeholder="Enter repetitions"
+              />
+            </div>
+
+            <div class="form-group">
+              <label :for="`weight_${exerciseIndex}_${setIndex}`">Weight (kg):</label>
+              <input
+                type="number"
+                :id="`weight_${exerciseIndex}_${setIndex}`"
+                v-model="set.weight"
+                required
+                class="form-input"
+                placeholder="Enter weight"
+              />
+            </div>
+
+            <button
+              type="button"
+              @click="removeSet(exerciseIndex, setIndex)"
+              class="remove-set-btn"
+            >
+              <span class="btn-icon">🗑️</span> Remove Set
+            </button>
+          </div>
+
           <button
             type="button"
-            @click="removeExercise(exerciseIndex)"
-            class="remove-exercise-btn"
+            @click="addSet(exerciseIndex)"
+            class="add-set-btn"
           >
-            <span class="btn-icon">🗑️</span> Remove Exercise
+            <span class="btn-icon">➕</span> Add Set
           </button>
         </div>
 
-        <div v-for="(set, setIndex) in exercise.sets" :key="setIndex" class="set-group">
-          <div class="form-group">
-            <label :for="`repetitions_${exerciseIndex}_${setIndex}`">Repetitions:</label>
-            <input
-              type="number"
-              :id="`repetitions_${exerciseIndex}_${setIndex}`"
-              v-model="set.repetitions"
-              required
-              class="form-input"
-              placeholder="Enter repetitions"
-            />
-          </div>
-
-          <div class="form-group">
-            <label :for="`weight_${exerciseIndex}_${setIndex}`">Weight (kg):</label>
-            <input
-              type="number"
-              :id="`weight_${exerciseIndex}_${setIndex}`"
-              v-model="set.weight"
-              required
-              class="form-input"
-              placeholder="Enter weight"
-            />
-          </div>
-
-          <button
-            type="button"
-            @click="removeSet(exerciseIndex, setIndex)"
-            class="remove-set-btn"
-          >
-            <span class="btn-icon">🗑️</span> Remove Set
+        <div class="action-buttons">
+          <button type="submit" class="submit-btn">
+            <span class="btn-icon">💾</span> Save Changes
+          </button>
+          <button type="button" @click="goBack" class="go-back-btn">
+            <span class="btn-icon">←</span> Go Back
           </button>
         </div>
-
-        <button
-          type="button"
-          @click="addSet(exerciseIndex)"
-          class="add-set-btn"
-        >
-          <span class="btn-icon">➕</span> Add Set
-        </button>
-      </div>
-
-      <div class="action-buttons">
-        <button type="submit" class="submit-btn">
-          <span class="btn-icon">💾</span> Create Training
-        </button>
-        <button type="button" @click="goBack" class="go-back-btn">
-          <span class="btn-icon">←</span> Go Back
-        </button>
-      </div>
-    </form>
-    <p v-if="error" class="error-message">{{ error }}</p>
+      </form>
+      <p v-if="error" class="error-message">{{ error }}</p>
+    </div>
   </div>
 </template>
 
@@ -122,7 +125,8 @@ import { jwtDecode } from "jwt-decode";
 import { useRouter } from "vue-router";
 
 export default {
-  setup() {
+  props: ['id'],
+  setup(props) {
     const router = useRouter();
     const token = localStorage.getItem("access_token");
     if (!token) {
@@ -142,6 +146,7 @@ export default {
     const allExercises = ref([]);
     const filteredExercises = ref([]);
     const exerciseSearch = ref('');
+    const loading = ref(true);
     const error = ref('');
 
     const fetchExercises = async () => {
@@ -156,7 +161,7 @@ export default {
 
     const filterExercises = () => {
       if (exerciseSearch.value === '') {
-        filteredExercises.value = allExercises.value.slice(0, 0); // Show 2 random hints
+        filteredExercises.value = [];
       } else {
         filteredExercises.value = allExercises.value.filter(exercise =>
           exercise.exercise_name.toLowerCase().includes(exerciseSearch.value.toLowerCase())
@@ -187,28 +192,55 @@ export default {
       exercises.value[exerciseIndex].sets.splice(setIndex, 1);
     };
 
+    const fetchTrainingDetails = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_BACKEND_API_URL;
+        const response = await axios.get(`${apiUrl}/trainings/fetch/${props.id}`);
+
+        training.value.training_name = response.data.name;
+        training.value.date = response.data.date;
+
+        exercises.value = response.data.sets.reduce((acc, set) => {
+          const exercise = acc.find(e => e.exercise_name === set.exercise_name);
+          if (exercise) {
+            exercise.sets.push(set);
+          } else {
+            acc.push({ exercise_name: set.exercise_name, sets: [set] });
+          }
+          return acc;
+        }, []);
+
+        loading.value = false;
+      } catch (err) {
+        error.value = "Failed to fetch training details. Please try again.";
+        loading.value = false;
+      }
+    };
+
     const submitTraining = async () => {
       try {
-        const sets = exercises.value.flatMap((exercise) =>
-          exercise.sets.map((set) => ({
-            exercise_name: exercise.exercise_name,
-            repetitions: set.repetitions,
-            weight: set.weight,
-          }))
-        );
+        const sets = exercises.value.flatMap(exercise =>
+          exercise.sets.map(set => {
+            const setData = {
+              exercise_name: exercise.exercise_name,
+              repetitions: set.repetitions,
+              weight: set.weight,
+          };
 
+          if (set.set_id !== null && set.set_id !== undefined) {
+            setData.set_id = set.set_id;
+          }
+
+          return setData;
+          })
+        );
         const apiUrl = import.meta.env.VITE_BACKEND_API_URL;
-        await axios.post(`${apiUrl}/trainings/?user_id=${user_id}`, {
-          training: {
-            training_name: training.value.training_name,
-            date: training.value.date,
-          },
-          sets: sets,
-        });
-        alert('Training created successfully!');
-        router.push("/trainings");
-      } catch (err) {
-        alert('An error occurred while creating the training.');
+        await axios.put(`${apiUrl}/trainings/update/${props.id}`, sets);
+
+        alert('Training updated successfully!');
+        router.push(`/trainings/${props.id}`);
+      } catch (error) {
+        error.value = "Failed to update training. Please try again.";
       }
     };
 
@@ -218,6 +250,7 @@ export default {
 
     onMounted(() => {
       fetchExercises();
+      fetchTrainingDetails();
     });
 
     return {
@@ -226,6 +259,7 @@ export default {
       allExercises,
       filteredExercises,
       exerciseSearch,
+      loading,
       error,
       addExercise,
       removeExercise,
@@ -240,7 +274,7 @@ export default {
 </script>
 
 <style scoped>
-.create-training-container {
+.update-training-container {
   max-width: 800px;
   margin: 50px auto;
   padding: 30px;
@@ -257,7 +291,13 @@ export default {
   text-align: center;
 }
 
-.create-training-form {
+.loading-message {
+  font-size: 18px;
+  color: #666;
+  text-align: center;
+}
+
+.update-training-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -406,6 +446,27 @@ label {
   display: flex;
   justify-content: space-between;
   gap: 15px;
+}
+
+.submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background-color: #27ae60;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  flex-grow: 1;
+}
+
+.submit-btn:hover {
+  background-color: #219653;
+  transform: translateY(-2px);
 }
 
 .go-back-btn {

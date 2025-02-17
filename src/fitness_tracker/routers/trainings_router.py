@@ -129,6 +129,7 @@ async def fetch_training_details(
                 )
 
             set_model = ExerciseSet(
+                set_id=exercise_set.id,
                 exercise_name=exercise.exercise_name,
                 repetitions=exercise_set.repetitions,
                 weight=float(exercise_set.weight),
@@ -162,3 +163,8 @@ async def delete_training(training_id: int, database: database_dependency) -> No
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Error occured while fetchin all trainings.",
         ) from e
+
+
+@trainings_router.put("/update/{training_id}")
+async def update_training(training_id: int, database: database_dependency) -> None:
+    pass

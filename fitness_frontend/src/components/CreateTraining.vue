@@ -25,6 +25,28 @@
         />
       </div>
 
+      <div class="form-group">
+        <label for="exercise_search">Search Exercise:</label>
+        <input
+          type="text"
+          id="exercise_search"
+          v-model="exerciseSearch"
+          @input="filterExercises"
+          class="form-input"
+          placeholder="Search for an exercise"
+        />
+        <div v-if="filteredExercises.length > 0" class="exercise-hints">
+          <div
+            v-for="(exercise, index) in filteredExercises"
+            :key="index"
+            class="exercise-hint"
+            @click="addExercise(exercise.exercise_name)"
+          >
+            {{ exercise.exercise_name }}
+          </div>
+        </div>
+      </div>
+
       <div v-for="(exercise, exerciseIndex) in exercises" :key="exerciseIndex" class="exercise-group">
         <div class="exercise-header">
           <h3>Exercise: {{ exercise.exercise_name }}</h3>
@@ -98,7 +120,7 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { jwtDecode } from "jwt-decode";
 import { useRouter } from "vue-router";
@@ -121,15 +143,39 @@ export default {
     });
 
     const exercises = ref([]);
+    const allExercises = ref([]);
+    const filteredExercises = ref([]);
+    const exerciseSearch = ref('');
     const error = ref('');
 
-    const addExercise = () => {
-      const exerciseName = prompt("Enter the exercise name:");
+    const fetchExercises = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_BACKEND_API_URL;
+        const response = await axios.get(`${apiUrl}/exercise/fetchall`);
+        allExercises.value = response.data;
+      } catch (err) {
+        error.value = 'Failed to fetch exercises';
+      }
+    };
+
+    const filterExercises = () => {
+      if (exerciseSearch.value === '') {
+        filteredExercises.value = allExercises.value.slice(0, 0); // Show 2 random hints
+      } else {
+        filteredExercises.value = allExercises.value.filter(exercise =>
+          exercise.exercise_name.toLowerCase().includes(exerciseSearch.value.toLowerCase())
+        );
+      }
+    };
+
+    const addExercise = (exerciseName) => {
       if (exerciseName) {
         exercises.value.push({
           exercise_name: exerciseName,
           sets: [{ repetitions: 0, weight: 0 }],
         });
+        exerciseSearch.value = '';
+        filteredExercises.value = [];
       }
     };
 
@@ -174,9 +220,16 @@ export default {
       router.push("/trainings");
     };
 
+    onMounted(() => {
+      fetchExercises();
+    });
+
     return {
       training,
       exercises,
+      allExercises,
+      filteredExercises,
+      exerciseSearch,
       error,
       addExercise,
       removeExercise,
@@ -184,6 +237,7 @@ export default {
       removeSet,
       submitTraining,
       goBack,
+      filterExercises,
     };
   },
 };
@@ -238,6 +292,26 @@ label {
 .form-input:focus {
   border-color: #3498db;
   outline: none;
+}
+
+.exercise-hints {
+  margin-top: 10px;
+}
+
+.exercise-hint {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  background-color: #f9f9f9;
+  transition: background-color 0.3s ease;
+  color: #2c3e50;
+}
+
+.exercise-hint:hover {
+  background-color: #3498db;
+  color: #fff;
 }
 
 .exercise-group {
@@ -356,27 +430,6 @@ label {
   display: flex;
   justify-content: space-between;
   gap: 15px;
-}
-
-.submit-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
-  background-color: #27ae60;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 500;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  flex-grow: 1;
-}
-
-.submit-btn:hover {
-  background-color: #219653;
-  transform: translateY(-2px);
 }
 
 .go-back-btn {

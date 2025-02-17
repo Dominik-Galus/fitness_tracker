@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from fitness_tracker import tables
 from fitness_tracker.database import SessionLocal, engine
 from fitness_tracker.routers.authorization_router import authorization_router
+from fitness_tracker.routers.exercise_router import exercise_router
 from fitness_tracker.routers.profiles_router import profiles_router
 from fitness_tracker.routers.trainings_router import trainings_router
 
@@ -19,6 +20,7 @@ fitness_app = FastAPI()
 fitness_app.include_router(authorization_router)
 fitness_app.include_router(profiles_router)
 fitness_app.include_router(trainings_router)
+fitness_app.include_router(exercise_router)
 
 tables.Base.metadata.create_all(bind=engine)
 

@@ -5,15 +5,17 @@
     <div v-else>
       <div v-if="trainingDetails" class="training-content">
         <h3 class="training-title">{{ trainingDetails.name }} - {{ formatDate(trainingDetails.date) }}</h3>
-        <ul class="sets-list">
-          <li v-for="set in trainingDetails.sets" :key="set.exercise_name" class="set-item">
-            <div class="set-content">
-              <p class="exercise-name"><strong>Exercise:</strong> {{ set.exercise_name }}</p>
-              <p class="exercise-detail"><strong>Repetitions:</strong> {{ set.repetitions }}</p>
-              <p class="exercise-detail"><strong>Weight:</strong> {{ set.weight }} kg</p>
-            </div>
-          </li>
-        </ul>
+        <div v-for="(exercise, exerciseName) in groupedSets" :key="exerciseName" class="exercise-group">
+          <h4 class="exercise-name">{{ exerciseName }}</h4>
+          <ul class="sets-list">
+            <li v-for="(set, index) in exercise" :key="index" class="set-item">
+              <div class="set-content">
+                <p class="exercise-detail"><strong>Repetitions:</strong> {{ set.repetitions }}</p>
+                <p class="exercise-detail"><strong>Weight:</strong> {{ set.weight }} kg</p>
+              </div>
+            </li>
+          </ul>
+        </div>
       </div>
       <p v-else class="no-details">No details available for this training.</p>
       <p v-if="error" class="error-message">{{ error }}</p>
@@ -37,6 +39,21 @@ export default {
       loading: true,
       error: "",
     };
+  },
+  computed: {
+    // Group sets by exercise name
+    groupedSets() {
+      if (!this.trainingDetails || !this.trainingDetails.sets) return {};
+
+      return this.trainingDetails.sets.reduce((groups, set) => {
+        const exerciseName = set.exercise_name;
+        if (!groups[exerciseName]) {
+          groups[exerciseName] = [];
+        }
+        groups[exerciseName].push(set);
+        return groups;
+      }, {});
+    },
   },
   created() {
     this.fetchTrainingDetails();
@@ -111,13 +128,24 @@ export default {
   margin-bottom: 20px;
 }
 
+.exercise-group {
+  margin-bottom: 20px;
+}
+
+.exercise-name {
+  font-size: 20px;
+  font-weight: 500;
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
 .sets-list {
   list-style: none;
   padding: 0;
 }
 
 .set-item {
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   padding: 15px;
   background-color: #f9f9f9;
   border-radius: 8px;
@@ -133,12 +161,6 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.exercise-name {
-  font-size: 18px;
-  font-weight: 500;
-  color: #2c3e50;
 }
 
 .exercise-detail {

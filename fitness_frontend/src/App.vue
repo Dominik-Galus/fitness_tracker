@@ -54,10 +54,10 @@ export default {
 <style scoped>
 .navbar {
   background-color: #2c3e50;
-  padding: 12px;
+  padding: 15px;
   display: flex;
   justify-content: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .navbar ul {
@@ -65,10 +65,11 @@ export default {
   display: flex;
   padding: 0;
   margin: 0;
+  gap: 20px;
 }
 
 .navbar li {
-  margin: 0 15px;
+  margin: 0;
 }
 
 .navbar a {
@@ -76,12 +77,20 @@ export default {
   color: #ecf0f1;
   font-weight: 600;
   font-size: 16px;
-  padding: 10px 15px;
-  border-radius: 5px;
-  transition: background 0.3s ease, color 0.3s ease;
+  padding: 10px 20px;
+  border-radius: 8px;
+  transition: background 0.3s ease, transform 0.2s ease;
+  display: flex;
+  align-items: center;
 }
 
 .navbar a:hover {
+  background-color: #34495e;
+  transform: translateY(-2px);
+}
+
+.navbar a.router-link-exact-active {
+  color: #fff;
   background-color: #34495e;
 }
 
@@ -89,5 +98,4 @@ export default {
   padding: 20px;
   text-align: center;
 }
-
 </style>

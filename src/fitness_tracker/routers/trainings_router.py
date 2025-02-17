@@ -3,6 +3,7 @@ from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import delete, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette import status
@@ -128,6 +129,7 @@ async def fetch_training_details(
                 )
 
             set_model = ExerciseSet(
+                set_id=exercise_set.id,
                 exercise_name=exercise.exercise_name,
                 repetitions=exercise_set.repetitions,
                 weight=float(exercise_set.weight),
@@ -144,3 +146,76 @@ async def fetch_training_details(
 
     else:
         return training_details
+
+
+@trainings_router.delete("/delete/{training_id}")
+async def delete_training(training_id: int, database: database_dependency) -> None:
+    try:
+        sets_statement = delete(SetsTable).where(SetsTable.training_id == training_id)  # type: ignore[arg-type]
+        training_statement = delete(TrainingsTable).where(TrainingsTable.id == training_id)  # type: ignore[arg-type]
+
+        database.execute(sets_statement)
+        database.execute(training_statement)
+        database.commit()
+    except IntegrityError as e:
+        database.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Error occured while fetchin all trainings.",
+        ) from e
+
+
+@trainings_router.put("/update/{training_id}")
+async def update_training(
+    training_id: int,
+    sets: list[ExerciseSet],
+    database: database_dependency,
+) -> None:
+    try:
+        all_sets = database.query(SetsTable).filter(SetsTable.training_id == training_id).all()
+        if not all_sets:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Error with processing training with id: {training_id}.",
+            )
+
+        sets_id = {exercise_set.set_id for exercise_set in sets}
+        deleted_sets = [exercise_set.id for exercise_set in all_sets if exercise_set.id not in sets_id]
+        for deleted_set in deleted_sets:
+            delete_statement = delete(SetsTable).where(SetsTable.id == deleted_set)  # type: ignore[arg-type]
+            database.execute(delete_statement)
+
+        for exercise_set in sets:
+            if not exercise_set.set_id:
+                exercise = database.query(ExerciseTable).filter(
+                    ExerciseTable.exercise_name == exercise_set.exercise_name,
+                ).first()
+                if not exercise:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail=f"Error with finding exercise {exercise_set.exercise_name}",
+                    )
+
+                set_model = SetsTable(
+                    training_id=training_id,
+                    exercise_id=exercise.id,
+                    repetitions=exercise_set.repetitions,
+                    weight=exercise_set.weight,
+                )
+                database.add(set_model)
+                continue
+
+            current_set = update(SetsTable).where(SetsTable.id == exercise_set.set_id).values(  # type: ignore[arg-type]
+                {
+                    SetsTable.weight: exercise_set.weight,
+                    SetsTable.repetitions: exercise_set.repetitions,
+                },
+            )
+            database.execute(current_set)
+        database.commit()
+    except IntegrityError as e:
+        database.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Error occured while updating training.",
+        ) from e

@@ -143,30 +143,36 @@ export default {
     });
 
     const exercises = ref([]);
-    const allExercises = ref([]);
     const filteredExercises = ref([]);
     const exerciseSearch = ref('');
     const loading = ref(true);
     const error = ref('');
-
-    const fetchExercises = async () => {
-      try {
-        const apiUrl = import.meta.env.VITE_BACKEND_API_URL;
-        const response = await axios.get(`${apiUrl}/exercise/fetchall`);
-        allExercises.value = response.data;
-      } catch (err) {
-        error.value = 'Failed to fetch exercises';
-      }
-    };
+    let debounceTimeout = null;
 
     const filterExercises = () => {
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+      }
+
       if (exerciseSearch.value === '') {
         filteredExercises.value = [];
-      } else {
-        filteredExercises.value = allExercises.value.filter(exercise =>
-          exercise.exercise_name.toLowerCase().includes(exerciseSearch.value.toLowerCase())
-        );
+        return;
       }
+
+      debounceTimeout = setTimeout(async () => {
+        try {
+          const apiUrl = import.meta.env.VITE_BACKEND_API_URL;
+          const response = await axios.get(`${apiUrl}/exercise/search`, {
+            params: {
+              characters: exerciseSearch.value,
+            },
+          });
+          filteredExercises.value = response.data || [];
+        } catch (err) {
+          error.value = 'Failed to fetch exercises';
+          filteredExercises.value = [];
+        }
+      }, 1500);
     };
 
     const addExercise = (exerciseName) => {
@@ -249,14 +255,12 @@ export default {
     };
 
     onMounted(() => {
-      fetchExercises();
       fetchTrainingDetails();
     });
 
     return {
       training,
       exercises,
-      allExercises,
       filteredExercises,
       exerciseSearch,
       loading,

@@ -201,7 +201,7 @@ export default {
     const fetchTrainingDetails = async () => {
       try {
         const apiUrl = import.meta.env.VITE_BACKEND_API_URL;
-        const response = await axios.get(`${apiUrl}/trainings/fetch/${props.id}`);
+        const response = await axios.get(`${apiUrl}/trainings/details/${props.id}`);
 
         training.value.training_name = response.data.name;
         training.value.date = response.data.date;

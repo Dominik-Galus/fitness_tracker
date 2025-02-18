@@ -74,7 +74,7 @@ export default {
         }
 
         const apiUrl = import.meta.env.VITE_BACKEND_API_URL;
-        const response = await axios.get(`${apiUrl}/trainings/fetch/${this.id}`);
+        const response = await axios.get(`${apiUrl}/trainings/details/${this.id}`);
 
         this.trainingDetails = response.data;
         this.loading = false;

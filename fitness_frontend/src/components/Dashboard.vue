@@ -17,7 +17,7 @@
 
 <script>
 import { jwtDecode } from "jwt-decode";
-import axios from '@/axios';
+import axios from "../axios.js";
 
 export default {
   data() {

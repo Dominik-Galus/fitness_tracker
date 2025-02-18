@@ -3,11 +3,12 @@ from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import delete, update
+from sqlalchemy import delete, desc, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette import status
 
+from fitness_tracker.configs.sorting_communication import ASCENDING, BY_DATE, BY_NAME, DESCENDING
 from fitness_tracker.database import SessionLocal
 from fitness_tracker.models.exercise_set import ExerciseSet
 from fitness_tracker.models.training import Training
@@ -17,6 +18,8 @@ from fitness_tracker.tables.sets_table import SetsTable
 from fitness_tracker.tables.trainings_table import TrainingsTable
 
 trainings_router = APIRouter(prefix="/trainings", tags=["trainings"])
+SORT_BY: set[str] = {BY_NAME, BY_DATE}
+ORDER_BY: set[str] = {DESCENDING, ASCENDING}
 
 
 def get_database() -> Generator:
@@ -74,28 +77,72 @@ async def create_training(
         ) from e
 
 
-@trainings_router.get("/fetchall/{user_id}")
-async def get_all_trainings(user_id: int, database: database_dependency) -> list[Training] | None:
+@trainings_router.get("/fetch/sorted/{user_id}")
+async def get_sorted_trainings(
+    user_id: int,
+    sort_by: str,
+    order: str,
+    database: database_dependency,
+) -> list[Training] | None:
     try:
-        results: list[Training] = []
+        sort_by = sort_by.lower()
+        order = order.lower()
 
-        trainings = database.query(TrainingsTable).filter(TrainingsTable.user_id == user_id).all()
+        if sort_by not in SORT_BY:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot sort by: {sort_by}.",
+            )
+        if order not in ORDER_BY:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot order by: {order}.",
+            )
+
+        sorted_results: list[Training] = []
+        trainings = database.query(TrainingsTable).filter(
+            TrainingsTable.user_id == user_id,
+        )
         if not trainings:
             return None
 
-        for training in trainings:
+        trainings = trainings.order_by(desc(sort_by)) if order == DESCENDING else trainings.order_by(sort_by)
+        sorted_trainings = trainings.limit(5).all()
+
+        for training in sorted_trainings:
             training_model = Training(training_name=training.name, date=training.date, training_id=training.id)
-            results.append(training_model)
+            sorted_results.append(training_model)
     except IntegrityError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Error occured while fetchin all trainings.",
         ) from e
     else:
-        return results
+        return sorted_results
 
 
-@trainings_router.get("/fetch/{training_id}")
+@trainings_router.get("/fetch/search")
+async def get_trainings_by_characters(characters: str, database: database_dependency) -> list[Training] | None:
+    try:
+        filtered_trainings: list[Training] = []
+
+        trainings = database.query(TrainingsTable).filter(TrainingsTable.name.like(f"%{characters}%")).all()
+        if not trainings:
+            return None
+
+        for training in trainings:
+            training_model = Training(training_name=training.name, date=training.date, training_id=training.id)
+            filtered_trainings.append(training_model)
+    except IntegrityError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Error occured while fetchin all trainings.",
+        ) from e
+    else:
+        return filtered_trainings
+
+
+@trainings_router.get("/details/{training_id}")
 async def fetch_training_details(
     training_id: int,
     database: database_dependency,

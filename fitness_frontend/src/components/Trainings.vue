@@ -11,6 +11,7 @@
         <input
           type="text"
           v-model="searchQuery"
+          @input="filterTrainingsDebounced"
           placeholder="Search by training name..."
           class="search-input"
         />
@@ -38,6 +39,9 @@
         </li>
       </ul>
 
+      <!-- Loading Spinner -->
+      <div v-if="isFetchingMore" class="loading-spinner">Loading more trainings...</div>
+
       <p v-if="error" class="error-message">{{ error }}</p>
     </div>
   </div>
@@ -57,10 +61,17 @@ export default {
       sortBy: "name-asc",
       searchQuery: "",
       debounceTimeous: null,
+      isFetchingMore: false,
+      offset: 0,
+      hasMore: true,
     };
   },
   created() {
     this.fetchTrainings();
+    window.addEventListener("scroll", this.handleScroll);
+  },
+  beforeDestroy() {
+    window.removeEventListener("scroll", this.handleScroll);
   },
   methods: {
     async fetchTrainings() {
@@ -81,16 +92,36 @@ export default {
           params: {
             sort_by: sortBy,
             order: order,
+            offset: this.offset,
           },
         });
+        if (response.data.length > 0) {
+            this.trainings = [...this.trainings, ...response.data];
+            this.offset += 5;
+        } else {
+            this.hasMore = false;
+        }
 
-        this.trainings = response.data;
         this.filterTrainings();
         this.loading = false;
       } catch (error) {
         this.error = "Failed to fetch trainings. Please try again.";
         this.loading = false;
       }
+    },
+    async fetchMoreTrainings() {
+        if (this.isFetchingMore || !this.hasMore) return;
+        this.isFetchingMore = true;
+        await this.fetchTrainings();
+        this.isFetchingMore = false;
+    },
+    handleScroll() {
+        const bottomOfWindow = document.documentElement.scrollTop + window.innerHeight >=
+          document.documentElement.offsetHeight - 100;
+
+        if (bottomOfWindow && this.hasMore) {
+            this.fetchMoreTrainings();
+        }
     },
     async deleteTraining(trainingId) {
       try {

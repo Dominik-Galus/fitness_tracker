@@ -83,6 +83,7 @@ async def get_sorted_trainings(
     sort_by: str,
     order: str,
     database: database_dependency,
+    offset: int = 0,
 ) -> list[Training] | None:
     try:
         sort_by = sort_by.lower()
@@ -107,7 +108,7 @@ async def get_sorted_trainings(
             return None
 
         trainings = trainings.order_by(desc(sort_by)) if order == DESCENDING else trainings.order_by(sort_by)
-        sorted_trainings = trainings.limit(5).all()
+        sorted_trainings = trainings.offset(offset).limit(5).all()
 
         for training in sorted_trainings:
             training_model = Training(training_name=training.name, date=training.date, training_id=training.id)

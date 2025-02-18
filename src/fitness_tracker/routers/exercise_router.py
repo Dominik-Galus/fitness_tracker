@@ -24,16 +24,16 @@ def get_database() -> Generator:
 database_dependency = Annotated[Session, Depends(get_database)]
 
 
-@exercise_router.get("/fetchall")
-async def get_all_exercises(database: database_dependency) -> list[Exercise]:
+@exercise_router.get("/search")
+async def get_exercises_by_characters(characters: str, database: database_dependency) -> list[Exercise] | None:
     try:
         all_exercises: list[Exercise] = []
-        exercises: list[ExerciseTable] | None = database.query(ExerciseTable).all()
+        exercises: list[ExerciseTable] | None = database.query(ExerciseTable).filter(
+            ExerciseTable.exercise_name.like(f"%{characters}%"),
+        ).all()
         if not exercises:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="There is no exercises.",
-            )
+            return None
+
         for exercise in exercises:
             exercise_model = Exercise(
                 exercise_name=exercise.exercise_name,

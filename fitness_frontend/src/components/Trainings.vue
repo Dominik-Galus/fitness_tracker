@@ -44,19 +44,19 @@
 </template>
 
 <script>
-import axios from '@/axios';
+import axios from "../axios.js";
 import { jwtDecode } from "jwt-decode";
 
 export default {
   data() {
     return {
       trainings: [],
-      sortedTrainings: [],
       filteredTrainings: [],
       loading: true,
       error: "",
       sortBy: "name-asc",
       searchQuery: "",
+      debounceTimeous: null,
     };
   },
   created() {
@@ -74,11 +74,18 @@ export default {
         const decoded = jwtDecode(token);
         const user_id = decoded.id;
 
+        const [sortBy, order] = this.sortBy.split("-");
+
         const apiUrl = import.meta.env.VITE_BACKEND_API_URL;
-        const response = await axios.get(`${apiUrl}/trainings/fetchall/${user_id}`);
+        const response = await axios.get(`${apiUrl}/trainings/fetch/sorted/${user_id}`, {
+          params: {
+            sort_by: sortBy,
+            order: order,
+          },
+        });
 
         this.trainings = response.data;
-        this.sortTrainings();
+        this.filterTrainings();
         this.loading = false;
       } catch (error) {
         this.error = "Failed to fetch trainings. Please try again.";
@@ -109,40 +116,32 @@ export default {
       this.$router.push("/trainings/create");
     },
     sortTrainings() {
-      switch (this.sortBy) {
-        case "name-asc":
-          this.sortedTrainings = [...this.trainings].sort((a, b) =>
-            a.training_name.localeCompare(b.training_name)
-          );
-          break;
-        case "name-desc":
-          this.sortedTrainings = [...this.trainings].sort((a, b) =>
-            b.training_name.localeCompare(a.training_name)
-          );
-          break;
-        case "date-asc":
-          this.sortedTrainings = [...this.trainings].sort((a, b) =>
-            new Date(a.date) - new Date(b.date)
-          );
-          break;
-        case "date-desc":
-          this.sortedTrainings = [...this.trainings].sort((a, b) =>
-            new Date(b.date) - new Date(a.date)
-          );
-          break;
-        default:
-          this.sortedTrainings = this.trainings;
-      }
-      this.filterTrainings();
+      this.fetchTrainings();
     },
     filterTrainings() {
-      if (this.searchQuery) {
-        this.filteredTrainings = this.sortedTrainings.filter((training) =>
-          training.training_name.toLowerCase().includes(this.searchQuery.toLowerCase())
-        );
-      } else {
-        this.filteredTrainings = this.sortedTrainings;
+      if (this.debounceTimeout) {
+        clearTimeout(this.debounceTimeout);
       }
+
+      if (this.searchQuery === "") {
+        this.filteredTrainings = this.trainings;
+        return;
+      }
+
+      this.debounceTimeout = setTimeout(async () => {
+        try {
+          const apiUrl = import.meta.env.VITE_BACKEND_API_URL;
+          const response = await axios.get(`${apiUrl}/trainings/fetch/search`, {
+            params: {
+              characters: this.searchQuery,
+            },
+          });
+          this.filteredTrainings = response.data || [];
+        } catch (error) {
+          this.error = "Failed to fetch trainings. Please try again.";
+          this.filteredTrainings = [];
+        }
+      }, 1500);
     },
     formatDate(dateString) {
       const date = new Date(dateString);

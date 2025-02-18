@@ -85,6 +85,9 @@ async def get_sorted_trainings(
     database: database_dependency,
 ) -> list[Training] | None:
     try:
+        sort_by = sort_by.lower()
+        order = order.lower()
+
         if sort_by not in SORT_BY:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,

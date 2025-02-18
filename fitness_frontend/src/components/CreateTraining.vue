@@ -117,7 +117,7 @@
 
 <script>
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import axios from "../axios.js";
 import { jwtDecode } from "jwt-decode";
 import { useRouter } from "vue-router";
 

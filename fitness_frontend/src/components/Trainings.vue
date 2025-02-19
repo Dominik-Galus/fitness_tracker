@@ -39,10 +39,11 @@
         </li>
       </ul>
 
-      <!-- Loading Spinner -->
       <div v-if="isFetchingMore" class="loading-spinner">Loading more trainings...</div>
 
       <p v-if="error" class="error-message">{{ error }}</p>
+
+      <div ref="sentinel" class="sentinel"></div>
     </div>
   </div>
 </template>
@@ -60,21 +61,26 @@ export default {
       error: "",
       sortBy: "name-asc",
       searchQuery: "",
-      debounceTimeous: null,
+      debounceTimeout: null,
       isFetchingMore: false,
       offset: 0,
       hasMore: true,
+      observer: null,
     };
   },
   created() {
-    this.fetchTrainings();
-    window.addEventListener("scroll", this.handleScroll);
+    this.fetchTrainings(true);
   },
-  beforeDestroy() {
-    window.removeEventListener("scroll", this.handleScroll);
+  mounted() {
+    this.initScrollObserver();
+  },
+  beforeUnmount() {
+    if (this.observer) {
+      this.observer.disconnect();
+    }
   },
   methods: {
-    async fetchTrainings() {
+    async fetchTrainings(isChange = false) {
       try {
         const token = localStorage.getItem("access_token");
         if (!token) {
@@ -87,6 +93,12 @@ export default {
 
         const [sortBy, order] = this.sortBy.split("-");
 
+        if (isChange) {
+          this.offset = 0;
+          this.trainings = [];
+          this.hasMore = true;
+        }
+
         const apiUrl = import.meta.env.VITE_BACKEND_API_URL;
         const response = await axios.get(`${apiUrl}/trainings/fetch/sorted/${user_id}`, {
           params: {
@@ -95,11 +107,12 @@ export default {
             offset: this.offset,
           },
         });
+
         if (response.data.length > 0) {
-            this.trainings = [...this.trainings, ...response.data];
-            this.offset += 5;
+          this.trainings = [...this.trainings, ...response.data];
+          this.offset += 5;
         } else {
-            this.hasMore = false;
+          this.hasMore = false;
         }
 
         this.filterTrainings();
@@ -110,18 +123,23 @@ export default {
       }
     },
     async fetchMoreTrainings() {
-        if (this.isFetchingMore || !this.hasMore) return;
-        this.isFetchingMore = true;
-        await this.fetchTrainings();
-        this.isFetchingMore = false;
+      if (this.isFetchingMore || !this.hasMore) return;
+      this.isFetchingMore = true;
+      await this.fetchTrainings();
+      this.isFetchingMore = false;
     },
-    handleScroll() {
-        const bottomOfWindow = document.documentElement.scrollTop + window.innerHeight >=
-          document.documentElement.offsetHeight - 100;
-
-        if (bottomOfWindow && this.hasMore) {
-            this.fetchMoreTrainings();
+    initScrollObserver() {
+      this.observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && this.hasMore) {
+          this.fetchMoreTrainings();
         }
+      });
+
+      this.$nextTick(() => {
+        if (this.$refs.sentinel) {
+          this.observer.observe(this.$refs.sentinel);
+        }
+      });
     },
     async deleteTraining(trainingId) {
       try {
@@ -138,7 +156,7 @@ export default {
           },
         });
 
-        this.fetchTrainings();
+        this.fetchTrainings(true);
       } catch (error) {
         this.error = "Failed to delete training. Please try again.";
       }
@@ -147,7 +165,7 @@ export default {
       this.$router.push("/trainings/create");
     },
     sortTrainings() {
-      this.fetchTrainings();
+      this.fetchTrainings(true);
     },
     filterTrainings() {
       if (this.debounceTimeout) {
@@ -360,5 +378,9 @@ export default {
   color: #e74c3c;
   text-align: center;
   margin-top: 20px;
+}
+
+.sentinel {
+  height: 50px;
 }
 </style>

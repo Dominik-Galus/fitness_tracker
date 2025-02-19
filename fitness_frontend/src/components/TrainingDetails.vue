@@ -1,7 +1,9 @@
 <template>
   <div class="training-details-container">
     <h2 class="page-title">Training Details</h2>
-    <div v-if="loading" class="loading-message">Loading training details...</div>
+    <div v-if="loading" class="loading-spinner">
+      <span class="loader"></span>
+    </div>
     <div v-else>
       <div v-if="trainingDetails" class="training-content">
         <h3 class="training-title">{{ trainingDetails.name }} - {{ formatDate(trainingDetails.date) }}</h3>
@@ -47,7 +49,6 @@ export default {
     };
   },
   computed: {
-    // Group sets by exercise name
     groupedSets() {
       if (!this.trainingDetails || !this.trainingDetails.sets) return {};
 
@@ -109,20 +110,6 @@ export default {
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.page-title {
-  font-size: 28px;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.loading-message {
-  font-size: 18px;
-  color: #666;
-  text-align: center;
 }
 
 .training-content {

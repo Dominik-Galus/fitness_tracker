@@ -1,7 +1,9 @@
 <template>
   <div class="trainings-container">
     <h2 class="page-title">My Trainings</h2>
-    <div v-if="loading" class="loading-message">Loading trainings...</div>
+    <div v-if="loading" class="loading-spinner">
+      <span class="loader"></span>
+    </div>
     <div v-else>
       <button @click="createTraining" class="create-btn">
         <span class="btn-icon">+</span> Create New Training
@@ -39,7 +41,9 @@
         </li>
       </ul>
 
-      <div v-if="isFetchingMore" class="loading-spinner">Loading more trainings...</div>
+      <div v-if="isFetchingMore" class="loading-spinner">
+        <span class="loader"></span>
+      <div>
 
       <p v-if="error" class="error-message">{{ error }}</p>
 
@@ -224,12 +228,6 @@ export default {
   font-weight: 600;
   color: #2c3e50;
   margin-bottom: 20px;
-  text-align: center;
-}
-
-.loading-message {
-  font-size: 18px;
-  color: #666;
   text-align: center;
 }
 

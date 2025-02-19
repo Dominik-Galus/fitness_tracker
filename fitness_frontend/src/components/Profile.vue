@@ -1,7 +1,9 @@
 <template>
   <div class="profile-container">
     <h2 class="page-title">Profile</h2>
-    <div v-if="loading" class="loading-message">Loading profile...</div>
+    <div v-if="loading" class="loading-spinner">
+      <span class="loader"></span>
+    </div>
     <div v-else>
       <form @submit.prevent="updateProfile" class="profile-form">
         <div class="form-group">
@@ -102,20 +104,6 @@ export default {
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.page-title {
-  font-size: 28px;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.loading-message {
-  font-size: 18px;
-  color: #666;
-  text-align: center;
 }
 
 .profile-form {

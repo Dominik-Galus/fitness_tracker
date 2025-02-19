@@ -58,13 +58,6 @@ export default {
   text-align: center;
 }
 
-.page-title {
-  font-size: 28px;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 20px;
-}
-
 .welcome-message {
   font-size: 20px;
   color: #34495e;

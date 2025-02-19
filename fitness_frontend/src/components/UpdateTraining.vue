@@ -1,7 +1,9 @@
 <template>
   <div class="update-training-container">
     <h2 class="page-title">Update Training</h2>
-    <div v-if="loading" class="loading-message">Loading training details...</div>
+    <div v-if="loading" class="loading-spinner">
+      <span class="loader"></span>
+    </div>
     <div v-else>
       <form @submit.prevent="submitTraining" class="update-training-form">
         <div class="form-group">
@@ -285,20 +287,6 @@ export default {
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.page-title {
-  font-size: 28px;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.loading-message {
-  font-size: 18px;
-  color: #666;
-  text-align: center;
 }
 
 .update-training-form {

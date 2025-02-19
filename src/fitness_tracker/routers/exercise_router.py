@@ -30,7 +30,7 @@ async def get_exercises_by_characters(characters: str, database: database_depend
         all_exercises: list[Exercise] = []
         exercises: list[ExerciseTable] | None = database.query(ExerciseTable).filter(
             ExerciseTable.exercise_name.like(f"%{characters}%"),
-        ).all()
+        ).limit(5).all()
         if not exercises:
             return None
 

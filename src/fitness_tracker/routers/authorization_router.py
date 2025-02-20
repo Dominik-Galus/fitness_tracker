@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPBearer, OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+from sqlalchemy import delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette import status
@@ -164,3 +165,37 @@ async def refresh_access_token(refresh_token: str, database: database_dependency
         access_token=access_token,
         token_type="bearer",  # noqa: S106
     )
+
+
+@authorization_router.delete("/delete")
+async def delete_account(access_token: str, password: str, database: database_dependency) -> None:
+    if not SECRET_KEY or not ALGORITHM:
+        msg = "Missing SECRET_KEY or Algorithm"
+        raise ValueError(msg)
+
+    decode = jwt.decode(access_token, SECRET_KEY, algorithms=ALGORITHM)
+    user_id: int | None = decode[PAYLOAD_ID]
+    username: str | None = decode[PAYLOAD_SUB]
+    if not user_id or username is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid access token.",
+        )
+
+    user = authenticate_user(username, password, database)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate user.",
+        )
+
+    try:
+        delete_account_statement = delete(UsersTable).where(UsersTable.id == user_id)  # type: ignore[arg-type]
+        database.execute(delete_account_statement)
+        database.commit()
+    except IntegrityError as e:
+        database.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"{user_id}",
+        ) from e

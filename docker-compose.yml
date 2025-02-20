@@ -6,7 +6,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://admin:admin@database:5432/study_planner_db
+      DATABASE_URL: postgresql://admin:admin@database:5432/fitness_tracker_db
       ALGORITHM: HS256
       SECRET_KEY: 1234567890qwertyuiopasdfghjklzxcvbnm
       FRONTEND_URL: http://localhost:8080

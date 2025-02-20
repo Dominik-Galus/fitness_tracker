@@ -30,16 +30,16 @@ export default {
   },
   methods: {
     checkAuthentication() {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem("access_token");
       if (!token) {
-        this.$router.push('/login');
+        this.$router.push("/login");
       } else {
         try {
           const decoded = jwtDecode(token);
           this.username = decoded.sub;
         } catch (error) {
           console.error("Invalid token", error);
-          this.$router.push('/login');
+          this.$router.push("/login");
         }
       }
     },

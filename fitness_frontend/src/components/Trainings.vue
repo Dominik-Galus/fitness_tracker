@@ -43,7 +43,7 @@
 
       <div v-if="isFetchingMore" class="loading-spinner">
         <span class="loader"></span>
-      <div>
+      </div>
 
       <p v-if="error" class="error-message">{{ error }}</p>
 
@@ -114,13 +114,17 @@ export default {
 
         if (response.data.length > 0) {
           this.trainings = [...this.trainings, ...response.data];
-          this.offset += 5;
+          this.offset += response.data.length;
         } else {
           this.hasMore = false;
         }
 
         this.filterTrainings();
         this.loading = false;
+
+        this.$nextTick(() => {
+          this.initScrollObserver();
+        });
       } catch (error) {
         this.error = "Failed to fetch trainings. Please try again.";
         this.loading = false;

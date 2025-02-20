@@ -164,7 +164,7 @@ export default {
           });
           filteredExercises.value = response.data || [];
         } catch (err) {
-          error.value = 'Failed to fetch exercises';
+          error.value = "Failed to fetch exercises";
           filteredExercises.value = [];
         }
       }, 1500);
@@ -211,10 +211,14 @@ export default {
           },
           sets: sets,
         });
-        alert('Training created successfully!');
+        alert("Training created successfully!");
         router.push("/trainings");
       } catch (err) {
-        alert('An error occurred while creating the training.');
+        if (err.response.status == 422) {
+          alert("Profile data must contain numbers greater than zero");
+        } else {
+          alert("An error occurred while creating the training.");
+        }
       }
     };
 

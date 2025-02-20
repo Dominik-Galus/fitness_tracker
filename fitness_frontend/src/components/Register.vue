@@ -65,9 +65,9 @@ export default {
           email: this.email,
           password: this.password
         });
-        this.$router.push('/login');
+        this.$router.push("/login");
       } catch (err) {
-        this.error = 'Registration failed. Please try again.';
+        this.error = "Registration failed. Please try again.";
       }
     }
   }

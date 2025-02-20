@@ -88,7 +88,11 @@ export default {
         this.success = "Profile updated successfully!";
         this.error = "";
       } catch (error) {
-        this.error = "Failed to update profile. Please try again.";
+        if (error.response.status == 422) {
+            this.error = "Profile data must contain numbers greater than zero.";
+        } else {
+          this.error = "Failed to update profile. Please try again.";
+        }
         this.success = "";
       }
     },

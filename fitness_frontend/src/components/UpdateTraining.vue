@@ -171,7 +171,7 @@ export default {
           });
           filteredExercises.value = response.data || [];
         } catch (err) {
-          error.value = 'Failed to fetch exercises';
+          error.value = "Failed to fetch exercises";
           filteredExercises.value = [];
         }
       }, 1500);
@@ -245,10 +245,14 @@ export default {
         const apiUrl = import.meta.env.VITE_BACKEND_API_URL;
         await axios.put(`${apiUrl}/trainings/update/${props.id}`, sets);
 
-        alert('Training updated successfully!');
+        alert("Training updated successfully!");
         router.push(`/trainings/${props.id}`);
       } catch (error) {
-        error.value = "Failed to update training. Please try again.";
+        if (error.response.status == 422) {
+          error.value = "Training data must contain numbers greater than zero."
+        } else {
+          error.value = "Failed to update training. Please try again.";
+        }
       }
     };
 

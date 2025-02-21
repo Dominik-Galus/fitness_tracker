@@ -1,7 +1,7 @@
 <template>
-  <div class="create-training-container">
+  <div class="site-container create-training-container">
     <h2 class="page-title">Create New Training</h2>
-    <form @submit.prevent="submitTraining" class="create-training-form">
+    <form @submit.prevent="submitTraining" class="form-group create-training-form">
       <div class="form-group">
         <label for="training_name">Training Name:</label>
         <input
@@ -53,13 +53,13 @@
           <button
             type="button"
             @click="removeExercise(exerciseIndex)"
-            class="remove-exercise-btn"
+            class="submit-btn remove-exercise-btn"
           >
             <span class="btn-icon">🗑️</span> Remove Exercise
           </button>
         </div>
 
-        <div v-for="(set, setIndex) in exercise.sets" :key="setIndex" class="set-group">
+        <div v-for="(set, setIndex) in exercise.sets" :key="setIndex" class="form-group set-group">
           <div class="form-group">
             <label :for="`repetitions_${exerciseIndex}_${setIndex}`">Repetitions:</label>
             <input
@@ -87,7 +87,7 @@
           <button
             type="button"
             @click="removeSet(exerciseIndex, setIndex)"
-            class="remove-set-btn"
+            class="submit-btn remove-set-btn"
           >
             <span class="btn-icon">🗑️</span> Remove Set
           </button>
@@ -96,7 +96,7 @@
         <button
           type="button"
           @click="addSet(exerciseIndex)"
-          class="add-set-btn"
+          class="submit-btn add-set-btn"
         >
           <span class="btn-icon">➕</span> Add Set
         </button>
@@ -106,7 +106,7 @@
         <button type="submit" class="submit-btn">
           <span class="btn-icon">💾</span> Create Training
         </button>
-        <button type="button" @click="goBack" class="go-back-btn">
+        <button type="button" @click="goBack" class="submit-btn go-back-btn">
           <span class="btn-icon">←</span> Go Back
         </button>
       </div>
@@ -247,44 +247,10 @@ export default {
 <style scoped>
 .create-training-container {
   max-width: 800px;
-  margin: 50px auto;
-  padding: 30px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .create-training-form {
-  display: flex;
-  flex-direction: column;
   gap: 20px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-label {
-  font-size: 16px;
-  font-weight: 500;
-  color: #2c3e50;
-}
-
-.form-input {
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 16px;
-  color: #333;
-  background-color: #f9f9f9;
-  transition: border-color 0.3s ease;
-}
-
-.form-input:focus {
-  border-color: #3498db;
-  outline: none;
 }
 
 .exercise-hints {
@@ -329,23 +295,14 @@ label {
 }
 
 .remove-exercise-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 8px 12px;
   background-color: #e74c3c;
-  color: #fff;
-  border: none;
   border-radius: 6px;
-  cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
-  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .remove-exercise-btn:hover {
   background-color: #c0392b;
-  transform: translateY(-2px);
 }
 
 .set-group {
@@ -354,24 +311,14 @@ label {
   padding: 15px;
   margin-bottom: 10px;
   background: #ffffff;
-  display: flex;
-  flex-direction: column;
   gap: 10px;
 }
 
 .remove-set-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 8px 12px;
   background-color: #e74c3c;
-  color: #fff;
-  border: none;
   border-radius: 6px;
-  cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
-  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .remove-set-btn:hover {
@@ -380,23 +327,14 @@ label {
 }
 
 .add-set-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 10px;
   background-color: #3498db;
-  color: #fff;
-  border: none;
   border-radius: 6px;
-  cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
-  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .add-set-btn:hover {
   background-color: #2980b9;
-  transform: translateY(-2px);
 }
 
 .action-buttons {
@@ -406,30 +344,7 @@ label {
 }
 
 .go-back-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
-  background-color: #2c3e50;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 500;
-  transition: background-color 0.3s ease, transform 0.2s ease;
   flex-grow: 1;
 }
 
-.go-back-btn:hover {
-  background-color: #34495e;
-  transform: translateY(-2px);
-}
-
-.error-message {
-  font-size: 16px;
-  color: #e74c3c;
-  text-align: center;
-  margin-top: 20px;
-}
 </style>

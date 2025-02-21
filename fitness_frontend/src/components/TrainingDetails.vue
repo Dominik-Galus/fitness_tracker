@@ -1,5 +1,5 @@
 <template>
-  <div class="training-details-container">
+  <div class="site-container training-details-container">
     <h2 class="page-title">Training Details</h2>
     <div v-if="loading" class="loading-spinner">
       <span class="loader"></span>
@@ -22,12 +22,11 @@
       <p v-else class="no-details">No details available for this training.</p>
       <p v-if="error" class="error-message">{{ error }}</p>
 
-      <!-- Action Buttons -->
       <div class="action-buttons">
-        <button @click="goBack" class="go-back-btn">
+        <button @click="goBack" class="submit-btn go-back-btn">
           <span class="btn-icon">←</span> Go Back
         </button>
-        <button @click="goToUpdateTraining" class="update-training-btn">
+        <button @click="goToUpdateTraining" class="submit-btn update-training-btn">
           <span class="btn-icon">✏️</span> Update Training
         </button>
       </div>
@@ -105,11 +104,6 @@ export default {
 <style scoped>
 .training-details-container {
   max-width: 800px;
-  margin: 50px auto;
-  padding: 30px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .training-content {
@@ -170,13 +164,6 @@ export default {
   font-size: 16px;
 }
 
-.error-message {
-  font-size: 16px;
-  color: #e74c3c;
-  text-align: center;
-  margin-top: 20px;
-}
-
 .action-buttons {
   display: flex;
   justify-content: space-between;
@@ -185,24 +172,15 @@ export default {
 }
 
 .go-back-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 12px 20px;
   background-color: #3498db;
-  color: #fff;
-  border: none;
   border-radius: 8px;
-  cursor: pointer;
   font-size: 16px;
-  font-weight: 500;
-  transition: background-color 0.3s ease, transform 0.2s ease;
   flex-grow: 1;
 }
 
 .go-back-btn:hover {
   background-color: #2980b9;
-  transform: translateY(-2px);
 }
 
 .go-back-btn .btn-icon {
@@ -211,24 +189,15 @@ export default {
 }
 
 .update-training-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 12px 20px;
   background-color: #27ae60;
-  color: #fff;
-  border: none;
   border-radius: 8px;
-  cursor: pointer;
   font-size: 16px;
-  font-weight: 500;
-  transition: background-color 0.3s ease, transform 0.2s ease;
   flex-grow: 1;
 }
 
 .update-training-btn:hover {
   background-color: #219653;
-  transform: translateY(-2px);
 }
 
 .update-training-btn .btn-icon {

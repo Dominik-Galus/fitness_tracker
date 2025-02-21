@@ -1,11 +1,11 @@
 <template>
-  <div class="trainings-container">
+  <div class="site-container trainings-container">
     <h2 class="page-title">My Trainings</h2>
     <div v-if="loading" class="loading-spinner">
       <span class="loader"></span>
     </div>
     <div v-else>
-      <button @click="createTraining" class="create-btn">
+      <button @click="createTraining" class="submit-btn create-btn">
         <span class="btn-icon">+</span> Create New Training
       </button>
 
@@ -35,7 +35,7 @@
             <span class="training-name">{{ training.training_name }}</span>
             <span class="training-date">{{ formatDate(training.date) }}</span>
           </router-link>
-          <button @click="deleteTraining(training.training_id)" class="delete-btn">
+          <button @click="deleteTraining(training.training_id)" class="submit-btn delete-btn">
             <span class="btn-icon">🗑️</span> Delete
           </button>
         </li>
@@ -220,41 +220,17 @@ export default {
 <style scoped>
 .trainings-container {
   max-width: 800px;
-  margin: 50px auto;
-  padding: 30px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.page-title {
-  font-size: 28px;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 20px;
-  text-align: center;
 }
 
 .create-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: 100%;
   padding: 12px 20px;
-  background-color: #2c3e50;
-  color: #fff;
-  border: none;
   border-radius: 8px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 500;
   margin-bottom: 20px;
-  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .create-btn:hover {
   background-color: #34495e;
-  transform: translateY(-2px);
 }
 
 .create-btn .btn-icon {
@@ -353,33 +329,18 @@ export default {
 }
 
 .delete-btn {
-  display: flex;
-  align-items: center;
   padding: 8px 12px;
   background-color: #e74c3c;
-  color: #fff;
-  border: none;
   border-radius: 6px;
-  cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
-  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .delete-btn:hover {
   background-color: #c0392b;
-  transform: translateY(-2px);
 }
 
 .delete-btn .btn-icon {
   margin-right: 6px;
-}
-
-.error-message {
-  font-size: 16px;
-  color: #e74c3c;
-  text-align: center;
-  margin-top: 20px;
 }
 
 .sentinel {

@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPBearer, OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+from sqlalchemy import delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette import status
@@ -16,6 +17,7 @@ from fitness_tracker.configs.access_token import PAYLOAD_ID, PAYLOAD_SUB, TIME_E
 from fitness_tracker.database import SessionLocal
 from fitness_tracker.models.auth_token import AuthToken
 from fitness_tracker.models.create_user_request import CreateUserRequest
+from fitness_tracker.models.delete_data import DeleteData
 from fitness_tracker.tables.users_table import UsersTable
 
 load_dotenv()
@@ -164,3 +166,37 @@ async def refresh_access_token(refresh_token: str, database: database_dependency
         access_token=access_token,
         token_type="bearer",  # noqa: S106
     )
+
+
+@authorization_router.post("/delete")
+async def delete_account(delete_data: DeleteData, database: database_dependency) -> None:
+    if not SECRET_KEY or not ALGORITHM:
+        msg = "Missing SECRET_KEY or Algorithm"
+        raise ValueError(msg)
+
+    decode = jwt.decode(delete_data.access_token, SECRET_KEY, algorithms=ALGORITHM)
+    user_id: int | None = decode[PAYLOAD_ID]
+    username: str | None = decode[PAYLOAD_SUB]
+    if not user_id or username is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid access token.",
+        )
+
+    user = authenticate_user(username, delete_data.password, database)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate user.",
+        )
+
+    try:
+        delete_account_statement = delete(UsersTable).where(UsersTable.id == user_id)  # type: ignore[arg-type]
+        database.execute(delete_account_statement)
+        database.commit()
+    except IntegrityError as e:
+        database.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Missing user.",
+        ) from e

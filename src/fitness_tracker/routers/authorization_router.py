@@ -17,6 +17,7 @@ from fitness_tracker.configs.access_token import PAYLOAD_ID, PAYLOAD_SUB, TIME_E
 from fitness_tracker.database import SessionLocal
 from fitness_tracker.models.auth_token import AuthToken
 from fitness_tracker.models.create_user_request import CreateUserRequest
+from fitness_tracker.models.delete_data import DeleteData
 from fitness_tracker.tables.users_table import UsersTable
 
 load_dotenv()
@@ -167,13 +168,13 @@ async def refresh_access_token(refresh_token: str, database: database_dependency
     )
 
 
-@authorization_router.delete("/delete")
-async def delete_account(access_token: str, password: str, database: database_dependency) -> None:
+@authorization_router.post("/delete")
+async def delete_account(delete_data: DeleteData, database: database_dependency) -> None:
     if not SECRET_KEY or not ALGORITHM:
         msg = "Missing SECRET_KEY or Algorithm"
         raise ValueError(msg)
 
-    decode = jwt.decode(access_token, SECRET_KEY, algorithms=ALGORITHM)
+    decode = jwt.decode(delete_data.access_token, SECRET_KEY, algorithms=ALGORITHM)
     user_id: int | None = decode[PAYLOAD_ID]
     username: str | None = decode[PAYLOAD_SUB]
     if not user_id or username is None:
@@ -182,7 +183,7 @@ async def delete_account(access_token: str, password: str, database: database_de
             detail="Invalid access token.",
         )
 
-    user = authenticate_user(username, password, database)
+    user = authenticate_user(username, delete_data.password, database)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -197,5 +198,5 @@ async def delete_account(access_token: str, password: str, database: database_de
         database.rollback()
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"{user_id}",
+            detail="Missing user.",
         ) from e

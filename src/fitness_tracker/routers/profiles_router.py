@@ -33,9 +33,9 @@ async def get_profile(user_id: int, database: database_dependency) -> Profiles |
         if not profile:
             profile = ProfileTable(
                 user_id=user_id,
-                age=0,
-                weight=0.0,
-                height=0,
+                age=None,
+                weight=None,
+                height=None,
             )
             database.add(profile)
             database.commit()
@@ -49,14 +49,14 @@ async def get_profile(user_id: int, database: database_dependency) -> Profiles |
             ) from e
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An unexpected error occurred.",
+            detail=f"An unexpected error occurred. {e}",
         ) from e
     else:
         return Profiles(
             user_id=user_id,
             age=profile.age,
             height=profile.height,
-            weight=float(profile.weight),
+            weight=float(profile.weight) if profile.weight else None,
         )
 
 

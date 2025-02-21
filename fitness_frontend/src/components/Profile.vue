@@ -21,6 +21,9 @@
         <button type="submit" class="submit-btn">
           <span class="btn-icon">💾</span> Update Profile
         </button>
+        <button @click="confirmDelete" class="delete-btn">
+          <span class="btn-icon">🗑️</span> Delete Account
+        </button>
       </form>
       <p v-if="error" class="error-message">{{ error }}</p>
       <p v-if="success" class="success-message">{{ success }}</p>
@@ -96,6 +99,36 @@ export default {
         this.success = "";
       }
     },
+    async confirmDelete() {
+      if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+        await this.deleteAccount();
+      }
+    },
+    async deleteAccount() {
+      try {
+        const token = localStorage.getItem("access_token");
+        if (!token) {
+          this.$router.push("/login");
+          return;
+        }
+
+        const password = prompt("Please enter your password to confirm account deletion:");
+        if (!password) {
+          return;
+        }
+
+        const apiUrl = import.meta.env.VITE_BACKEND_API_URL;
+        await axios.post(`${apiUrl}/auth/delete`, {
+          access_token: token,
+          password: password,
+        });
+
+        localStorage.removeItem("access_token");
+        this.$router.push("/login");
+      } catch (error) {
+        this.error = "Failed to delete account. Please try again.";
+      }
+    },
   },
 };
 </script>
@@ -138,6 +171,30 @@ label {
   color: #e74c3c;
   text-align: center;
   margin-top: 20px;
+}
+
+.delete-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-btn:hover {
+  background-color: #c0392b;
+}
+
+.delete-btn .btn-icon {
+  margin-right: 8px;
+  font-size: 18px;
 }
 
 .success-message {

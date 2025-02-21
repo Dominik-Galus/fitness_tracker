@@ -91,3 +91,62 @@ jobs:
           python3 -m pip install -r requirements/typing.txt
           python3 -m pip install dist/*.whl
           python3 -m mypy src
+
+  test:
+    name: Code Testing
+    needs: [setup, build]
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: admin
+          POSTGRES_DB: fitness_tracker_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U admin -d fitness_tracker_db"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: "postgresql://admin:admin@localhost:5432/fitness_tracker_db"
+      FRONTEND_URL: "http://localhost:5173"
+    steps:
+      - name: Download codebase
+        uses: actions/download-artifact@v4
+        with:
+          name: codebase
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.13
+          cache: pip
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build_artifact
+
+      - name: Install Dependencies
+        run: |
+          python3 -m pip install -r requirements/test.txt
+          python3 -m pip install dist/*.whl
+
+      - name: Is Postgres running
+        run: |
+          pg_isready -h localhost -p 5432 -U admin
+
+      - name: Run Database Migrations
+        run: |
+          python3 -m fitness_tracker.main
+
+      - name: Fill Database With Exercises
+        run: |
+          python3 -m fitness_tracker.exercise_database.exercise_filler main
+
+      - name: Run tests
+        run: |
+          python3 -m pytest test

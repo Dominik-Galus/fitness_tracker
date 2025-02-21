@@ -1,5 +1,5 @@
 <template>
-  <div class="register-container">
+  <div class="site-container register-container">
     <h2 class="page-title">Register</h2>
     <form @submit.prevent="register" class="register-form">
       <div class="form-group">
@@ -77,11 +77,6 @@ export default {
 <style scoped>
 .register-container {
   max-width: 500px;
-  margin: 50px auto;
-  padding: 30px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .register-form {
@@ -90,27 +85,8 @@ export default {
   gap: 20px;
 }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-label {
-  font-size: 16px;
-  font-weight: 500;
-  color: #2c3e50;
-}
-
 .submit-btn .btn-icon {
   margin-right: 8px;
   font-size: 18px;
-}
-
-.error-message {
-  font-size: 16px;
-  color: #e74c3c;
-  text-align: center;
-  margin-top: 20px;
 }
 </style>

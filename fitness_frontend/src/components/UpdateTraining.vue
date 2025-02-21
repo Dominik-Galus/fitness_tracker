@@ -1,11 +1,11 @@
 <template>
-  <div class="update-training-container">
+  <div class="site-container update-training-container">
     <h2 class="page-title">Update Training</h2>
     <div v-if="loading" class="loading-spinner">
       <span class="loader"></span>
     </div>
     <div v-else>
-      <form @submit.prevent="submitTraining" class="update-training-form">
+      <form @submit.prevent="submitTraining" class="form-group update-training-form">
         <div class="form-group">
           <label for="training_name">Training Name:</label>
           <input
@@ -57,7 +57,7 @@
             <button
               type="button"
               @click="removeExercise(exerciseIndex)"
-              class="remove-exercise-btn"
+              class="submit-btn remove-exercise-btn"
             >
               <span class="btn-icon">🗑️</span> Remove Exercise
             </button>
@@ -91,7 +91,7 @@
             <button
               type="button"
               @click="removeSet(exerciseIndex, setIndex)"
-              class="remove-set-btn"
+              class="submit-btn remove-set-btn"
             >
               <span class="btn-icon">🗑️</span> Remove Set
             </button>
@@ -100,7 +100,7 @@
           <button
             type="button"
             @click="addSet(exerciseIndex)"
-            class="add-set-btn"
+            class="submit-btn add-set-btn"
           >
             <span class="btn-icon">➕</span> Add Set
           </button>
@@ -110,7 +110,7 @@
           <button type="submit" class="submit-btn">
             <span class="btn-icon">💾</span> Save Changes
           </button>
-          <button type="button" @click="goBack" class="go-back-btn">
+          <button type="button" @click="goBack" class="submit-btn go-back-btn">
             <span class="btn-icon">←</span> Go Back
           </button>
         </div>
@@ -286,44 +286,10 @@ export default {
 <style scoped>
 .update-training-container {
   max-width: 800px;
-  margin: 50px auto;
-  padding: 30px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .update-training-form {
-  display: flex;
-  flex-direction: column;
   gap: 20px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-label {
-  font-size: 16px;
-  font-weight: 500;
-  color: #2c3e50;
-}
-
-.form-input {
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 16px;
-  color: #333;
-  background-color: #f9f9f9;
-  transition: border-color 0.3s ease;
-}
-
-.form-input:focus {
-  border-color: #3498db;
-  outline: none;
 }
 
 .exercise-hints {
@@ -368,23 +334,14 @@ label {
 }
 
 .remove-exercise-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 8px 12px;
   background-color: #e74c3c;
-  color: #fff;
-  border: none;
   border-radius: 6px;
-  cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
-  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .remove-exercise-btn:hover {
   background-color: #c0392b;
-  transform: translateY(-2px);
 }
 
 .set-group {
@@ -399,43 +356,25 @@ label {
 }
 
 .remove-set-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 8px 12px;
   background-color: #e74c3c;
-  color: #fff;
-  border: none;
   border-radius: 6px;
-  cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
-  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .remove-set-btn:hover {
   background-color: #c0392b;
-  transform: translateY(-2px);
 }
 
 .add-set-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 10px;
   background-color: #3498db;
-  color: #fff;
-  border: none;
   border-radius: 6px;
-  cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
-  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .add-set-btn:hover {
   background-color: #2980b9;
-  transform: translateY(-2px);
 }
 
 .action-buttons {
@@ -444,52 +383,7 @@ label {
   gap: 15px;
 }
 
-.submit-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
-  background-color: #27ae60;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 500;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  flex-grow: 1;
-}
-
-.submit-btn:hover {
-  background-color: #219653;
-  transform: translateY(-2px);
-}
-
 .go-back-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
-  background-color: #2c3e50;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 500;
-  transition: background-color 0.3s ease, transform 0.2s ease;
   flex-grow: 1;
-}
-
-.go-back-btn:hover {
-  background-color: #34495e;
-  transform: translateY(-2px);
-}
-
-.error-message {
-  font-size: 16px;
-  color: #e74c3c;
-  text-align: center;
-  margin-top: 20px;
 }
 </style>

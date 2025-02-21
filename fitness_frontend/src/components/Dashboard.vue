@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard-container">
+  <div class="site-container dashboard-container">
     <h2 class="page-title">Dashboard</h2>
     <div class="welcome-message">
       <p>Welcome, <span class="username">{{ username }}</span>!</p>
@@ -50,12 +50,6 @@ export default {
 <style scoped>
 .dashboard-container {
   max-width: 800px;
-  margin: 50px auto;
-  padding: 30px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  text-align: center;
 }
 
 .welcome-message {

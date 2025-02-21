@@ -1,11 +1,11 @@
 <template>
-  <div class="profile-container">
+  <div class="site-container profile-container">
     <h2 class="page-title">Profile</h2>
     <div v-if="loading" class="loading-spinner">
       <span class="loader"></span>
     </div>
     <div v-else>
-      <form @submit.prevent="updateProfile" class="profile-form">
+      <form @submit.prevent="updateProfile" class="form-group profile-form">
         <div class="form-group">
           <label for="age">Age:</label>
           <input type="number" v-model="profile.age" id="age" required class="form-input" />
@@ -21,7 +21,7 @@
         <button type="submit" class="submit-btn">
           <span class="btn-icon">💾</span> Update Profile
         </button>
-        <button @click="confirmDelete" class="delete-btn">
+        <button @click="confirmDelete" class="submit-btn delete-btn">
           <span class="btn-icon">🗑️</span> Delete Account
         </button>
       </form>
@@ -136,29 +136,10 @@ export default {
 <style scoped>
 .profile-container {
   max-width: 500px;
-  margin: 50px auto;
-  padding: 30px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .profile-form {
-  display: flex;
-  flex-direction: column;
   gap: 20px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-label {
-  font-size: 16px;
-  font-weight: 500;
-  color: #2c3e50;
 }
 
 .submit-btn .btn-icon {
@@ -166,26 +147,13 @@ label {
   font-size: 18px;
 }
 
-.error-message {
-  font-size: 16px;
-  color: #e74c3c;
-  text-align: center;
-  margin-top: 20px;
-}
-
 .delete-btn {
   margin-top: 20px;
   padding: 10px 20px;
   background-color: #e74c3c;
   color: white;
-  border: none;
   border-radius: 5px;
-  cursor: pointer;
   font-size: 16px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .delete-btn:hover {
@@ -203,4 +171,5 @@ label {
   text-align: center;
   margin-top: 20px;
 }
+
 </style>

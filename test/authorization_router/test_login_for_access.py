@@ -3,10 +3,9 @@ import os
 from collections.abc import Generator
 
 import pytest
-from _pytest.fixtures import FixtureFunction
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 
 from fitness_tracker.database import Base
 from fitness_tracker.main import fitness_app, get_database
@@ -32,15 +31,16 @@ def override_get_database() -> Generator:
 @pytest.fixture
 def test_database() -> Generator:
     Base.metadata.create_all(bind=engine)
-    yield
+    db_session = TestingSessionLocal()
+    yield db_session
+    db_session.close()
     Base.metadata.drop_all(bind=engine)
 
 
 fitness_app.dependency_overrides[get_database] = override_get_database
 client = TestClient(fitness_app)
-
-CREATED_STATUS: int = 201
-FAILED_STATUS: int = 400
+OK_STATUS: int = 200
+NOT_AUTHORIZED_STATUS: int = 401
 
 
 @pytest.mark.parametrize(("user"), [
@@ -48,29 +48,19 @@ FAILED_STATUS: int = 400
     {"username": "test3", "email": "email2@email.com", "password": "test4"},
     {"username": "test5", "email": "email3@email.com", "password": "test6"},
 ])
-def test_create_user(user: dict[str, str], test_database: FixtureFunction) -> None:  # noqa: ARG001
-    response = client.post("/auth/", json=user)
-    assert response.status_code == CREATED_STATUS
+def test_login_for_access(user: dict[str, str], test_database: Session) -> None:  # noqa: ARG001
+    client.post("/auth/", json=user)
+    response = client.post("/auth/token", data={"username": user["username"], "password": user["password"]})
+    assert response.status_code == OK_STATUS
+    assert response.json() is not None
 
 
-@pytest.mark.parametrize(("first_user", "second_user"), [
-    (
-        {"username": "test1", "email": "email1@email.com", "password": "test"},
-        {"username": "test1", "email": "email2@email.com", "password": "test"},
-    ),
-    (
-        {"username": "test1", "email": "email1@email.com", "password": "test"},
-        {"username": "test2", "email": "email1@email.com", "password": "test"},
-    ),
-
+@pytest.mark.parametrize(("user", "wrong_password"), [
+    ({"username": "test1", "email": "email1@email.com", "password": "test2"}, "wrong"),
+    ({"username": "test3", "email": "email2@email.com", "password": "test4"}, "wrong"),
+    ({"username": "test5", "email": "email3@email.com", "password": "test6"}, "wrong"),
 ])
-def test_create_user_failed(
-    first_user: dict[str, str],
-    second_user: dict[str, str],
-    test_database: FixtureFunction,  # noqa: ARG001
-) -> None:
-    response_first_user = client.post("/auth/", json=first_user)
-    assert response_first_user.status_code == CREATED_STATUS
-
-    response_second_user = client.post("/auth/", json=second_user)
-    assert response_second_user.status_code == FAILED_STATUS
+def test_login_for_access_failed(user: dict[str, str], wrong_password: str, test_database: Session) -> None:  # noqa: ARG001
+    client.post("/auth/", json=user)
+    response = client.post("/auth/token", data={"username": user["username"], "password": wrong_password})
+    assert response.status_code == NOT_AUTHORIZED_STATUS

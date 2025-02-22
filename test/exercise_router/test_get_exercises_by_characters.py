@@ -9,8 +9,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from fitness_tracker.database import Base
 from fitness_tracker.main import fitness_app, get_database
-
-from .database_filler import fill_database
+from test.database_filler import fill_database
 
 TESTING_DATABASE_URL: str | None = os.getenv("DATABASE_URL")
 if not TESTING_DATABASE_URL:

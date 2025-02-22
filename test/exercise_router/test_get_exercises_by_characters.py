@@ -3,15 +3,15 @@ import os
 from collections.abc import Generator
 
 import pytest
-from _pytest.fixtures import FixtureFunction
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 
 from fitness_tracker.database import Base
 from fitness_tracker.main import fitness_app, get_database
+from test.database_filler import fill_database
 
-TESTING_DATABASE_URL: str = os.getenv("DATABASE_URL")
+TESTING_DATABASE_URL: str | None = os.getenv("DATABASE_URL")
 if not TESTING_DATABASE_URL:
     msg = "Missing url for testing database"
     raise ValueError(msg)
@@ -30,8 +30,12 @@ def override_get_database() -> Generator:
 
 
 @pytest.fixture
-def test_database() -> None:
+def test_database() -> Generator:
     Base.metadata.create_all(bind=engine)
+    db_session = TestingSessionLocal()
+    yield db_session
+    db_session.close()
+    Base.metadata.drop_all(bind=engine)
 
 
 fitness_app.dependency_overrides[get_database] = override_get_database
@@ -89,7 +93,9 @@ client = TestClient(fitness_app)
 def test_get_exercises_by_characters(
     characters: str,
     expected_response: list[dict[str, str]],
-    test_database: FixtureFunction) -> None:  # noqa: ARG001
+    test_database: Session,
+) -> None:
+    fill_database(test_database)
     response = client.get("/exercise/search", params={"characters": characters})
     assert response.status_code == 200  # noqa: PLR2004
     assert response.json() == expected_response

@@ -29,7 +29,7 @@ async def get_exercises_by_characters(characters: str, database: database_depend
     try:
         all_exercises: list[Exercise] = []
         exercises: list[ExerciseTable] | None = database.query(ExerciseTable).filter(
-            ExerciseTable.exercise_name.like(f"%{characters}%"),
+            ExerciseTable.exercise_name.ilike(f"%{characters}%"),
         ).limit(5).all()
         if not exercises:
             return None
@@ -44,7 +44,7 @@ async def get_exercises_by_characters(characters: str, database: database_depend
         database.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Error occurred while updating profile",
+            detail="Error occurred while fetching exercises.",
         ) from e
     else:
         return all_exercises

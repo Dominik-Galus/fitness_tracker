@@ -143,10 +143,6 @@ jobs:
         run: |
           python3 -m fitness_tracker.main
 
-      - name: Fill Database With Exercises
-        run: |
-          python3 -m fitness_tracker.exercise_database.exercise_filler main
-
       - name: Run tests
         run: |
           python3 -m pytest test

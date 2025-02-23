@@ -11,7 +11,7 @@ from fitness_tracker.database import Base
 from fitness_tracker.main import fitness_app, get_database
 from test.database_filler import fill_database
 
-TESTING_DATABASE_URL: str | None = os.getenv("DATABASE_URL")
+TESTING_DATABASE_URL: str | None = os.getenv("TESTING_DATABASE_URL")
 if not TESTING_DATABASE_URL:
     msg = "Missing url for testing database"
     raise ValueError(msg)
@@ -45,10 +45,10 @@ OK_STATUS: int = 200
 BAD_REQUEST_STATUS: int = 400
 
 
-@pytest.mark.parametrize("training_id", [
-    1, 2, 3,
+@pytest.mark.parametrize(("training_id", "user_id"), [
+    (1, 1), (2, 2), (2, 3),
 ])
-def test_delete_training(training_id: int, test_database: Session) -> None:
+def test_delete_training(training_id: int, user_id: int, test_database: Session) -> None:
     fill_database(test_database)
-    response = client.delete(f"/trainings/delete/{training_id}")
+    response = client.delete(f"/trainings/delete/{training_id}", params={"user_id": user_id})
     assert response.status_code == OK_STATUS

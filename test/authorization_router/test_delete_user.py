@@ -11,7 +11,7 @@ from sqlalchemy.orm import sessionmaker
 from fitness_tracker.database import Base
 from fitness_tracker.main import fitness_app, get_database
 
-TESTING_DATABASE_URL: str | None = os.getenv("DATABASE_URL")
+TESTING_DATABASE_URL: str | None = os.getenv("TESTING_DATABASE_URL")
 if not TESTING_DATABASE_URL:
     msg = "Missing url for testing database"
     raise ValueError(msg)

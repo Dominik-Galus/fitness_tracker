@@ -123,11 +123,18 @@ async def get_sorted_trainings(
 
 
 @trainings_router.get("/fetch/search")
-async def get_trainings_by_characters(characters: str, database: database_dependency) -> list[Training] | None:
+async def get_trainings_by_characters(
+    characters: str,
+    user_id: int,
+    database: database_dependency,
+) -> list[Training] | None:
     try:
         filtered_trainings: list[Training] = []
 
-        trainings = database.query(TrainingsTable).filter(TrainingsTable.name.like(f"%{characters}%")).all()
+        trainings = database.query(TrainingsTable).filter(
+            TrainingsTable.name.like(f"%{characters}%"),
+            TrainingsTable.user_id == user_id,
+        ).all()
         if not trainings:
             return None
 
@@ -197,12 +204,12 @@ async def fetch_training_details(
 
 
 @trainings_router.delete("/delete/{training_id}")
-async def delete_training(training_id: int, database: database_dependency) -> None:
+async def delete_training(training_id: int, user_id: int, database: database_dependency) -> None:
     try:
-        sets_statement = delete(SetsTable).where(SetsTable.training_id == training_id)  # type: ignore[arg-type]
-        training_statement = delete(TrainingsTable).where(TrainingsTable.id == training_id)  # type: ignore[arg-type]
+        training_statement = delete(TrainingsTable).where(   # type: ignore[arg-type]
+            TrainingsTable.id == training_id,
+        ).where(TrainingsTable.user_id == user_id)
 
-        database.execute(sets_statement)
         database.execute(training_statement)
         database.commit()
     except IntegrityError as e:

@@ -44,9 +44,19 @@ client = TestClient(fitness_app)
 OK_STATUS: int = 200
 
 
-@pytest.mark.parametrize(("user_id", "sort_by", "order", "expected_trainings"), [
-    (
-        2, "name", "asc", [
+@pytest.mark.parametrize(("characters", "user_id", "expected_trainings"), [
+    ("tes", "1",
+        [
+            {
+                "training_id": 1,
+                "training_name": "test1",
+                "date": "2025-02-23",
+            },
+
+        ],
+    ),
+    ("t", "2",
+        [
             {
                 "training_id": 2,
                 "training_name": "test2",
@@ -59,58 +69,24 @@ OK_STATUS: int = 200
             },
         ],
     ),
-    (
-        2, "name", "desc", [
-            {
-                "training_id": 3,
-                "training_name": "test3",
-                "date": "2025-02-21",
-            },
+    ("test2", "2",
+        [
             {
                 "training_id": 2,
                 "training_name": "test2",
                 "date": "2025-02-23",
-            },
-        ],
-    ),
-    (
-        2, "date", "asc", [
-            {
-                "training_id": 3,
-                "training_name": "test3",
-                "date": "2025-02-21",
-            },
-            {
-                "training_id": 2,
-                "training_name": "test2",
-                "date": "2025-02-23",
-            },
-        ],
-    ),
-    (
-        2, "date", "desc", [
-            {
-                "training_id": 2,
-                "training_name": "test2",
-                "date": "2025-02-23",
-            },
-            {
-                "training_id": 3,
-                "training_name": "test3",
-                "date": "2025-02-21",
             },
         ],
     ),
 ])
-def test_get_sorted_trainings(
+def test_get_trainings_by_chars(
+    characters: str,
     user_id: int,
-    sort_by: str,
-    order: str,
-    expected_trainings: list[dict[str, str]],
+    expected_trainings: list[dict[str, str | int]],
     test_database: Session,
 ) -> None:
     fill_database(test_database)
-    response = client.get(f"/trainings/fetch/sorted/{user_id}", params={"sort_by": sort_by, "order": order})
+    response = client.get("/trainings/fetch/search", params={"characters": characters, "user_id": user_id})
     assert response.status_code == OK_STATUS
     trainings = response.json()
     assert trainings == expected_trainings

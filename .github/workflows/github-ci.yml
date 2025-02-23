@@ -111,6 +111,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     env:
+      TESTING_DATABASE_URL: "postgresql://admin:admin@localhost:5432/fitness_tracker_db"
       DATABASE_URL: "postgresql://admin:admin@localhost:5432/fitness_tracker_db"
       FRONTEND_URL: "http://localhost:5173"
       ALGORITHM: HS256

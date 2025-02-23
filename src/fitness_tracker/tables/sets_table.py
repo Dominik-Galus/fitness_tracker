@@ -9,4 +9,4 @@ class SetsTable(Base):
     training_id = Column(Integer, ForeignKey("trainings.id", ondelete="CASCADE"), nullable=False)
     exercise_id = Column(Integer, ForeignKey("exercise.id", ondelete="CASCADE"), nullable=False)
     repetitions = Column(Integer, CheckConstraint("repetitions > 0"), nullable=False)
-    weight = Column(Float, CheckConstraint("weight > 0"), nullable=False)
+    weight = Column(Float, CheckConstraint("weight >= 0"), nullable=False)

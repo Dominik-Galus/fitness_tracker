@@ -85,3 +85,20 @@ def fill_database(db_session: Session) -> None:
         )
         db_session.add(profile_record)
     db_session.commit()
+
+
+def fill_users(db_session: Session) -> None:
+    for exercise_dict in EXERCISES:
+        exercise_record = ExerciseTable(
+            exercise_name=exercise_dict["exercise_name"],
+            muscle_group=exercise_dict["muscle_group"],
+        )
+        db_session.add(exercise_record)
+    for user_dict in USERS:
+        user_record = UsersTable(
+            username=user_dict["username"],
+            email=user_dict["email"],
+            password=user_dict["password"],
+        )
+        db_session.add(user_record)
+    db_session.commit()

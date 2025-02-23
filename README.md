@@ -15,6 +15,28 @@ On profile table:
 - weight > 0
 - height > 0
 
+The fitness API consist of various routes with its endpoints:
+Auth router with prefix "/auth":
+- "/" - endpoint for creating new account in database
+- "/token" - endpoint for creating access and refresh token as an authorization of user
+- "/refresh" - endpoint for refreshing access token thanks to refresh token
+- "/delete" - endpoint for deleting account in database
+
+Profiles router with prefix "/profile":
+- "/{user_id}" - endpoint for getting the profile for user_id or make a profile when it does not exists
+- "/update/{user_id}" - endpoint for updating the profile of user
+
+Exercise router with prefix "/exercise":
+- "/search" - endpoint for getting exercise by respective characters
+
+Trainings router with prefix "/trainings":
+- "/" - endpoint for creating new training in database
+- "/fetch/sorted/{user_id}" - endpoint for fetching sorted by "name" or "date" depending on the parameters selected when calling an endpoint
+- "/fetch/search" - endpoint for getting the trainings by respective characters
+- "/details/{training_id}" - endpoint for getting the details of the training (what exercises it consists of and so on)
+- "/delete/{training_id}" - endpoint for deleting the training by its id
+- "/update/{training_id}" - endpoint for updating the training
+
 Downloading using pip:
 ```
 python3 -m pip install .

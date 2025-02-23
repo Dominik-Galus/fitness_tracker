@@ -2,6 +2,8 @@ import os
 from collections.abc import Generator
 from typing import Annotated
 
+import click
+import uvicorn
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -47,3 +49,10 @@ def get_database() -> Generator:
 
 
 database_dependency = Annotated[Session, Depends(get_database)]
+
+
+@click.command()
+@click.option("--host", default="127.0.0.1", help="Host to run the server on.")
+@click.option("--port", default=8000, type=int, help="Port to run the server on.")
+def main(host: str, port: int) -> None:
+    uvicorn.run(fitness_app, host=host, port=port)

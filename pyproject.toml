@@ -15,6 +15,7 @@ dynamic = ["dependencies"]
 
 [project.scripts]
 fill-exercises = "fitness_tracker.exercise_database.exercise_filler:main"
+start-api = "fitness_tracker.main:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

@@ -1,6 +1,8 @@
 from sqlalchemy.orm import Session
 
 from fitness_tracker.tables.exercise_table import ExerciseTable
+from fitness_tracker.tables.profile_table import ProfileTable
+from fitness_tracker.tables.users_table import UsersTable
 
 EXERCISES: list[dict[str, str]] = [
     {
@@ -45,6 +47,18 @@ EXERCISES: list[dict[str, str]] = [
     },
 ]
 
+USERS: list[dict[str, str]] = [
+    {"username": "test1", "email": "email1@email.com", "password": "test2"},
+    {"username": "test3", "email": "email2@email.com", "password": "test4"},
+    {"username": "test5", "email": "email3@email.com", "password": "test6"},
+]
+
+PROFILES: list[dict[str, int]] = [
+    {"user_id": 1, "age": 15, "weight": 75, "height": 180},
+    {"user_id": 2, "age": 18, "weight": 120, "height": 200},
+    {"user_id": 3, "age": 35, "weight": 83, "height": 175},
+]
+
 
 def fill_database(db_session: Session) -> None:
     for exercise_dict in EXERCISES:
@@ -53,4 +67,21 @@ def fill_database(db_session: Session) -> None:
             muscle_group=exercise_dict["muscle_group"],
         )
         db_session.add(exercise_record)
+    for user_dict in USERS:
+        user_record = UsersTable(
+            username=user_dict["username"],
+            email=user_dict["email"],
+            password=user_dict["password"],
+        )
+        db_session.add(user_record)
+    db_session.commit()
+
+    for profile_dict in PROFILES:
+        profile_record = ProfileTable(
+            user_id=profile_dict["user_id"],
+            age=profile_dict["age"],
+            weight=profile_dict["weight"],
+            height=profile_dict["height"],
+        )
+        db_session.add(profile_record)
     db_session.commit()

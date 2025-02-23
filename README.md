@@ -39,7 +39,7 @@ start-api --host 127.0.0.1 --port 8000
 The basic values for host are: 127.0.0.1 and for port: 8000.
 
 ## Frontend side
-Jako frontend został użyty Vue.js:
+As a frontend was used Vue.js:
 ```
 npm run build
 ```

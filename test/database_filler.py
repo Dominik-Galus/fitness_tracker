@@ -2,6 +2,8 @@ from sqlalchemy.orm import Session
 
 from fitness_tracker.tables.exercise_table import ExerciseTable
 from fitness_tracker.tables.profile_table import ProfileTable
+from fitness_tracker.tables.sets_table import SetsTable
+from fitness_tracker.tables.trainings_table import TrainingsTable
 from fitness_tracker.tables.users_table import UsersTable
 
 EXERCISES: list[dict[str, str]] = [
@@ -59,6 +61,76 @@ PROFILES: list[dict[str, int]] = [
     {"user_id": 3, "age": 35, "weight": 83, "height": 175},
 ]
 
+TRAININGS: list[tuple[int, dict[str, str], list[dict[str, int]]]] = [
+    [
+        (1,
+            {
+                "training_id": 1,
+                "training_name": "test1",
+                "date": "2025-02-23",
+            },
+            [
+                {
+                    "exercise_name": "Australian pull-ups",
+                    "repetitions": 12,
+                    "weight": 70,
+                },
+            ],
+        ),
+        (2,
+            {
+                "training_id": 2,
+                "training_name": "test2",
+                "date": "2025-02-23",
+            },
+            [
+                {
+                    "exercise_name": "Decline Pushups",
+                    "repetitions": 12,
+                    "weight": 0,
+                },
+                {
+                    "exercise_name": "Bench Press",
+                    "repetitions": 12,
+                    "weight": 100,
+                },
+                {
+                    "exercise_name": "Bench Press",
+                    "repetitions": 12,
+                    "weight": 100,
+                },
+
+            ],
+        ),
+        (2,
+            {
+                "training_id": 3,
+                "training_name": "test3",
+                "date": "2025-02-21",
+            },
+            [
+                {
+                    "exercise_name": "Decline Pushups",
+                    "repetitions": 12,
+                    "weight": 0,
+                },
+                {
+                    "exercise_name": "Bench Press",
+                    "repetitions": 12,
+                    "weight": 100,
+                },
+                {
+                    "exercise_name": "Bench Press",
+                    "repetitions": 12,
+                    "weight": 100,
+                },
+
+            ],
+        ),
+
+    ],
+]
+
 
 def fill_database(db_session: Session) -> None:
     for exercise_dict in EXERCISES:
@@ -85,6 +157,31 @@ def fill_database(db_session: Session) -> None:
         )
         db_session.add(profile_record)
     db_session.commit()
+
+    for training_list in TRAININGS:
+        for training_tuple in training_list:
+            user_id, training_data, sets = training_tuple
+            training_record = TrainingsTable(
+                id=training_data["training_id"],
+                name=training_data["training_name"],
+                date=training_data["date"],
+                user_id=user_id,
+            )
+            db_session.add(training_record)
+            db_session.commit()
+
+            for exercise_set in sets:
+                exercise = db_session.query(ExerciseTable).filter(
+                    ExerciseTable.exercise_name == exercise_set["exercise_name"],
+                ).first()
+                set_record = SetsTable(
+                    training_id=training_data["training_id"],
+                    exercise_id=exercise.id,
+                    repetitions=exercise_set["repetitions"],
+                    weight=exercise_set["weight"],
+                )
+                db_session.add(set_record)
+            db_session.commit()
 
 
 def fill_users(db_session: Session) -> None:

@@ -43,6 +43,7 @@ client = TestClient(fitness_app)
 
 CREATED_STATUS: int = 201
 UNPROCESSABLE_STATUS: int = 422
+BAD_REQUEST: int = 400
 
 
 @pytest.mark.parametrize(("user_id", "training_data", "sets"), [
@@ -133,6 +134,20 @@ def test_add_training(
 
         ],
     ),
+    (3,
+        {
+            "training_name": "test1",
+            "date": "2025-02-23",
+        },
+        [
+            {
+                "exercise_name": "not existing exercise",
+                "repetitions": 12,
+                "weight": 70,
+            },
+        ],
+    ),
+
 ])
 def test_add_training_failed(
     user_id: int,
@@ -142,4 +157,4 @@ def test_add_training_failed(
 ) -> None:
     fill_users(test_database)
     response = client.post("/trainings/", params={"user_id": user_id}, json={"training": training_data, "sets": sets})
-    assert response.status_code == UNPROCESSABLE_STATUS
+    assert response.status_code in {UNPROCESSABLE_STATUS, BAD_REQUEST}

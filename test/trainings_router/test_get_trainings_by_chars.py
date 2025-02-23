@@ -44,29 +44,49 @@ client = TestClient(fitness_app)
 OK_STATUS: int = 200
 
 
-@pytest.mark.parametrize(("user_id", "expected_profile"), [
-    (1,
-        {
-            "age": 15, "weight": 75, "height": 180,
-        },
+@pytest.mark.parametrize(("characters", "user_id", "expected_trainings"), [
+    ("tes", "1",
+        [
+            {
+                "training_id": 1,
+                "training_name": "test1",
+                "date": "2025-02-23",
+            },
+
+        ],
     ),
-    (2,
-        {
-            "age": 18, "weight": 120, "height": 200,
-        },
+    ("t", "2",
+        [
+            {
+                "training_id": 2,
+                "training_name": "test2",
+                "date": "2025-02-23",
+            },
+            {
+                "training_id": 3,
+                "training_name": "test3",
+                "date": "2025-02-21",
+            },
+        ],
     ),
-    (3,
-        {
-            "age": 35, "weight": 83, "height": 175,
-        },
+    ("test2", "2",
+        [
+            {
+                "training_id": 2,
+                "training_name": "test2",
+                "date": "2025-02-23",
+            },
+        ],
     ),
 ])
-def test_fetch_profiles(user_id: int, expected_profile: dict[str, int], test_database: Session) -> None:
+def test_get_trainings_by_chars(
+    characters: str,
+    user_id: int,
+    expected_trainings: list[dict[str, str | int]],
+    test_database: Session,
+) -> None:
     fill_database(test_database)
-    response = client.get(f"/profile/{user_id}")
+    response = client.get("/trainings/fetch/search", params={"characters": characters, "user_id": user_id})
     assert response.status_code == OK_STATUS
-
-    profile = response.json()
-    assert profile["age"] == expected_profile["age"]
-    assert profile["weight"] == expected_profile["weight"]
-    assert profile["height"] == expected_profile["height"]
+    trainings = response.json()
+    assert trainings == expected_trainings

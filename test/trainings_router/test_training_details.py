@@ -1,6 +1,7 @@
 # ruff: noqa: S101
 import os
 from collections.abc import Generator
+from datetime import date
 
 import pytest
 from fastapi.testclient import TestClient
@@ -9,6 +10,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from fitness_tracker.database import Base
 from fitness_tracker.main import fitness_app, get_database
+from test.database_filler import fill_database
 
 TESTING_DATABASE_URL: str | None = os.getenv("TESTING_DATABASE_URL")
 if not TESTING_DATABASE_URL:
@@ -39,29 +41,33 @@ def test_database() -> Generator:
 
 fitness_app.dependency_overrides[get_database] = override_get_database
 client = TestClient(fitness_app)
+
 OK_STATUS: int = 200
-NOT_AUTHORIZED_STATUS: int = 401
 
 
-@pytest.mark.parametrize(("user"), [
-    {"username": "test1", "email": "email1@email.com", "password": "test2"},
-    {"username": "test3", "email": "email2@email.com", "password": "test4"},
-    {"username": "test5", "email": "email3@email.com", "password": "test6"},
+@pytest.mark.parametrize(("training_id", "expected_training_details"), [
+    (1,
+        {
+            "name": "test1",
+            "date": "2025-02-23",
+            "sets": [
+                {
+                    "set_id": 1,
+                    "exercise_name": "Australian pull-ups",
+                    "repetitions": 12,
+                    "weight": 70,
+                },
+            ],
+        },
+    ),
 ])
-def test_refresh_token(user: dict[str, str], test_database: Session) -> None:  # noqa: ARG001
-    client.post("/auth/", json=user)
-    response_login = client.post("/auth/token", data=user)
-    refresh_token = response_login.json()["refresh_token"]
-    assert response_login.status_code == OK_STATUS
-    assert refresh_token is not None
-
-    response = client.post("/auth/refresh", params={"refresh_token": refresh_token})
+def test_training_details(
+    training_id: int,
+    expected_training_details: dict[str, list[dict[str, str | int] | int | date]],
+    test_database: Session,
+) -> None:
+    fill_database(test_database)
+    response = client.get(f"/trainings/details/{training_id}")
     assert response.status_code == OK_STATUS
-
-
-@pytest.mark.parametrize(("wrong_token"), [
-    "12312423432", "123123123", "5435345435345",
-])
-def test_refresh_token_failed(wrong_token: str) -> None:
-    response = client.post("/auth/refresh", params={"refresh_token": wrong_token})
-    assert response.status_code == NOT_AUTHORIZED_STATUS
+    training_details = response.json()
+    assert training_details == expected_training_details

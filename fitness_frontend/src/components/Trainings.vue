@@ -156,11 +156,16 @@ export default {
           this.$router.push("/login");
           return;
         }
+        const decoded = jwtDecode(token);
+        const user_id = decoded.id;
 
         const apiUrl = import.meta.env.VITE_BACKEND_API_URL;
         await axios.delete(`${apiUrl}/trainings/delete/${trainingId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
+          },
+          params: {
+              user_id: user_id,
           },
         });
 
@@ -180,6 +185,16 @@ export default {
         clearTimeout(this.debounceTimeout);
       }
 
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        this.$router.push("/login");
+        return;
+      }
+
+      const decoded = jwtDecode(token);
+      const user_id = decoded.id;
+
+
       if (this.searchQuery === "") {
         this.filteredTrainings = this.trainings;
         return;
@@ -191,6 +206,7 @@ export default {
           const response = await axios.get(`${apiUrl}/trainings/fetch/search`, {
             params: {
               characters: this.searchQuery,
+              user_id: user_id,
             },
           });
           this.filteredTrainings = response.data || [];
